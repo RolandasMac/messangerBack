@@ -51,4 +51,52 @@ module.exports = {
       },
     ],
   },
+  conversations: {
+    convId: {
+      type: String,
+      required: true,
+    },
+    convParticipants: [
+      {
+        userId: {
+          type: String,
+          required: true,
+        },
+        userName: {
+          type: String,
+          required: true,
+        },
+        avatar: {
+          type: String,
+          required: false,
+        },
+      },
+    ],
+    messages: [
+      {
+        message: {
+          type: String,
+          required: true,
+        },
+        owner: {
+          userId: {
+            type: String,
+            required: true,
+          },
+          userName: {
+            type: String,
+            required: true,
+          },
+          avatar: {
+            type: String,
+            required: false,
+          },
+        },
+        createdAt: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
+  },
 };

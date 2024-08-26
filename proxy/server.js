@@ -39,7 +39,7 @@ const proxy = (port, url) => {
 app.use("/auth", proxy(5001, "auth"));
 app.use("/todo", proxy(5002, "todo"));
 app.use("/socket", proxy(5004, "socket"));
-// app.use("/upload", proxy(1005, "upload"));
+app.use("/conversations", proxy(5005, "conversations"));
 // app.use("/update", proxy(1006, "update"));
 
 app.listen(PORT, HOST, () => {
