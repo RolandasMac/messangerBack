@@ -4,7 +4,11 @@ const { Server } = require("socket.io");
 const path = require("path");
 
 //Cote service********
-const { sendCoteMessage, sendCoteMessageDisconectedUser } = require("./plugin");
+const {
+  sendCoteMessage,
+  sendCoteMessageDisconectedUser,
+  sendCoteMessageGetNewChatMessage,
+} = require("./plugin");
 // const { log } = require("console");
 //*********************************
 
@@ -76,10 +80,18 @@ io.on("connection", (socket) => {
 
   // Handle chat message
   socket.on("chatMessage", (data) => {
-    io.to(data.room).emit("chatMessage", {
-      message: data.message,
-      room: data.room,
-      user: data.user,
+    // console.log(data);
+    sendCoteMessageGetNewChatMessage(data).then((response) => {
+      console.log("response", response);
+      // io.emit(
+      //   "fetchUsers"
+      //   //  {
+      //   //   message: `User ${data.username} conected to the server, !`,
+      //   //   conectedUser: conectedUser,
+      //   // }
+      // );
+      // Broadcast the message to all connected clients
+      // io.to(socket.id).emit("message", { time, data: fraze });
     });
   });
   // User disconected event

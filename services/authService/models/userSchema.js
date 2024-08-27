@@ -1,6 +1,6 @@
 // models/User.js
 const mongoose = require("mongoose");
-const { user } = require("../../../schemas/allSchemas.js");
+const { user } = require("../../../schemas/allSchemas");
 
 const userSchema = new mongoose.Schema(user, {
   timestamps: true,

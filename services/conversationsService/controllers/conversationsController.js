@@ -8,34 +8,84 @@ const mongoose = require("mongoose");
 
 exports.test = async (req, res) => {
   try {
-    const message = "Conversations servisas veikia???!!!";
-    // console.log(userId);
+    const conversationWithUsers = await Conversations.aggregate(
+      [
+        {
+          $match: {
+            _id: new mongoose.Types.ObjectId("66cd5ea8475814b814852dce"),
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "convParticipants.userId",
+            foreignField: "_id",
+            as: "convParticipants1",
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "messages.ownerId",
+            foreignField: "_id",
+            as: "messageOwners",
+          },
+        },
+        {
+          $addFields: {
+            messages: {
+              $map: {
+                input: "$messages",
+                as: "message",
+                in: {
+                  message: "$$message.message",
+                  ownerId: "$$message.ownerId",
+                  createdAt: "$$message.createdAt",
+                  owner: {
+                    $arrayElemAt: [
+                      {
+                        $filter: {
+                          input: "$messageOwners",
+                          as: "owner",
+                          cond: {
+                            $eq: ["$$owner._id", "$$message.ownerId"],
+                          },
+                        },
+                      },
+                      0,
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        },
+      ],
+      { maxTimeMS: 60000, allowDiskUse: true }
+    );
 
-    res.status(200).json(message);
+    res.status(200).json(conversationWithUsers);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
-exports.testCreate = async (req, res) => {
-  const participants = [
-    { userId: "user3", userName: "Gaidys Gaidelis", avatar: "avatar3.png" },
-    { userId: "user1", userName: "John Doe", avatar: "avatar1.png" },
-    { userId: "user2", userName: "Jane Smith", avatar: "avatar2.png" },
-  ];
+exports.Create = async (req, res, next) => {
+  const { participants, newMessage } = req.body;
+  console.log(participants, newMessage);
 
-  const newMessage = {
-    message: "Hello, this is a new message!",
-    owner: {
-      userId: "user1",
-      userName: "John Doe",
-      avatar: "avatar1.png",
-    },
-    createdAt: new Date().toISOString(),
-  };
+  // const participants = [
+  //   { id: "66c87613e5c09f86733010f4" },
+  //   { id: "66c8c9eeb18525d6f123e58e" },
+  // ];
+  // const newMessage = {
+  //   message: "ergergergergergergergergregerg",
+  //   ownerId: "66c87613e5c09f86733010f4",
+  //   createdAt: "2024-08-26T18:42:52.751Z",
+  // };
+  // console.log(participants);
   try {
     // Sort participants by userId to ensure consistency
     participants.sort((a, b) => a.userId.localeCompare(b.userId));
-
     // Create a query to find a conversation with exactly these participants
     const query = {
       convParticipants: {
@@ -44,51 +94,146 @@ exports.testCreate = async (req, res) => {
         })),
       },
     };
-
-    // Find and update the conversation if it exists, or create a new one
+    // Use findOneAndUpdate to either update or create the conversation
     const updatedConversation = await Conversations.findOneAndUpdate(
       query,
       {
-        $setOnInsert: {
-          convId: new mongoose.Types.ObjectId().toString(), // Generate a new convId
-          convParticipants: participants,
-        },
-        $push: {
-          messages: newMessage,
-        },
+        $push: { messages: newMessage },
+        $setOnInsert: { convParticipants: participants },
       },
       {
         new: true, // Return the updated document
-        upsert: true, // Create the document if it doesn't exist
+        upsert: true, // Create a new document if no match is found
       }
     );
-
-    res.status(200).json(updatedConversation);
+    // console.log(updatedConversation);
+    // res.status(200).json(updatedConversation);
+    req.params.convId = updatedConversation._id;
+    next();
   } catch (error) {
-    console.error("Error finding or creating conversation:", error);
-    throw error;
+    res.status(400).json({ message: error.message });
+  }
+};
+exports.getConvById = async (req, res) => {
+  try {
+    const oneConv = await Conversations.aggregate(
+      [
+        {
+          $match: {
+            _id: new mongoose.Types.ObjectId(req.params.convId),
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "convParticipants.userId",
+            foreignField: "_id",
+            as: "convParticipants1",
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "messages.ownerId",
+            foreignField: "_id",
+            as: "messageOwners",
+          },
+        },
+        {
+          $addFields: {
+            messages: {
+              $map: {
+                input: "$messages",
+                as: "message",
+                in: {
+                  message: "$$message.message",
+                  ownerId: "$$message.ownerId",
+                  createdAt: "$$message.createdAt",
+                  owner: {
+                    $arrayElemAt: [
+                      {
+                        $filter: {
+                          input: "$messageOwners",
+                          as: "owner",
+                          cond: {
+                            $eq: ["$$owner._id", "$$message.ownerId"],
+                          },
+                        },
+                      },
+                      0,
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        },
+        {
+          $project: {
+            __v: 0,
+            convParticipants: 0,
+            messageOwners: 0,
+          },
+        },
+      ],
+      { maxTimeMS: 60000, allowDiskUse: true }
+    );
+    res.status(200).json(oneConv[0]);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
   }
 };
 
-// exports.createTodo = async (req, res) => {
-//   try {
-//     const newTodo = req.body.data;
-//     const userId = "66be44fc19199fe7bb2273eb";
-//     const result = await Todo.findOneAndUpdate(
-//       { _id: userId },
-//       {
-//         $push: { todos: newTodo },
-//       },
-//       {
-//         new: true,
-//         upsert: true,
-//       }
-//     );
-//     res.status(201).json(result.todos);
-//   } catch (error) {
-//     res.status(400).json({ message: error.message });
-//   }
-// };
+exports.getConversationsList = async (req, res) => {
+  try {
+    const conversationsList = await await Conversations.aggregate(
+      [
+        {
+          $lookup: {
+            as: "participantsRes",
+            from: "users",
+            foreignField: "_id",
+            localField: "convParticipants.userId",
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            participantsRes: 1,
+            updatedAt: 1,
+          },
+        },
+      ],
+      { maxTimeMS: 60000, allowDiskUse: true }
+    );
+    res.status(200).json(conversationsList);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+exports.sendMessage = async (req) => {
+  const { toConv, userId, message } = req.data;
+  // const user = await
+  const newMessage = {
+    message: message,
+    ownerId: userId,
+    createdAt: new Date(),
+  };
+  try {
+    const oneConversation = await Conversations.findOneAndUpdate(
+      { _id: toConv },
+      { $push: { messages: newMessage } },
+      { new: true }
+    ); // Return the updated docu);
+    // console.log(oneConversation);
+    // res.status(200).json(conversationsList);
+    return { oneConversation, toConv };
+  } catch (error) {
+    // res.status(400).json({ message: error.message });
+    return error;
+  }
+};
 
 // exports.markAsCompleted = async (req, res) => {
 //   const { taskId, completed } = req.body;
