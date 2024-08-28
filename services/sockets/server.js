@@ -82,16 +82,13 @@ io.on("connection", (socket) => {
   socket.on("chatMessage", (data) => {
     // console.log(data);
     sendCoteMessageGetNewChatMessage(data).then((response) => {
-      console.log("response", response);
-      // io.emit(
-      //   "fetchUsers"
-      //   //  {
-      //   //   message: `User ${data.username} conected to the server, !`,
-      //   //   conectedUser: conectedUser,
-      //   // }
-      // );
-      // Broadcast the message to all connected clients
-      // io.to(socket.id).emit("message", { time, data: fraze });
+      // console.log("response", response);
+      response.convParticipants1.forEach((element) => {
+        if (element.socketId.length) {
+          console.log(element.socketId);
+          io.to(element.socketId).emit("newmessage", response);
+        }
+      });
     });
   });
   // User disconected event

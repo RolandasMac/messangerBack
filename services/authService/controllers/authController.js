@@ -82,7 +82,6 @@ exports.login = async (req, res) => {
       { isOnline: true, lastloggedAt: new Date() },
       { new: true }
     );
-    console.log(user);
     if (!user) {
       res.status(401).json({ success: false, message: "Tokio vartotojo nėra" });
     }
@@ -93,14 +92,27 @@ exports.login = async (req, res) => {
         .status(401)
         .json({ success: false, message: "Blogas slaptažodis" });
     }
-    console.log("Password match");
-    // sign with RSA SHA256
     const JWT_key = process.env.JWT_KEY;
     const token = jwt.sign(
       { email: user.email, id: user._id, name: user.name },
       JWT_key
     );
-    console.log("tokenas" + token);
+
+    res.cookie("authtoken", token, {
+      // can only be accessed by server requests
+      httpOnly: true,
+      // path = where the cookie is valid
+      path: "/",
+      // domain = what domain the cookie is valid on
+      domain: "localhost",
+      // secure = only send cookie over https
+      secure: true,
+      // sameSite = only send cookie if the request is coming from the same origin
+      sameSite: "lax", // "strict" | "lax" | "none" (secure must be true)
+      // maxAge = how long the cookie is valid for in milliseconds
+      maxAge: 3600000, // 1 hour
+    });
+
     res.status(200).json({
       success: true,
       message: "Jūs sėkmingai prisijungėte",
@@ -199,3 +211,15 @@ exports.getOneUser = async (req, res) => {
 //     res.status(400).json({ message: error.message });
 //   }
 // };
+exports.test = async (req, res) => {
+  res.cookie("authtoken", "Gaidys", {
+    maxAge: 900000,
+    httpOnly: true, // The cookie is accessible only by the web server
+    secure: false, // Send cookie over HTTPS only
+    sameSite: "Strict", // Cookie will only be sent in a first-party context
+  });
+  res.status(200).json("Ok");
+};
+exports.testgauti = async (req, res) => {
+  res.status(200).json(req.tokenInfo);
+};

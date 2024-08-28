@@ -5,6 +5,7 @@ const dotenv = require("dotenv");
 const authRouter = require("./routes/authRoutes");
 const path = require("path");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 //*************************************************** */
 // const bodyParser = require("body-parser");
 // var multer = require("multer");
@@ -14,6 +15,7 @@ const cors = require("cors");
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 const app = express();
+app.use(cookieParser());
 const PORT = process.env.AUTHPORT || 5000;
 const MONGODB_URI =
   process.env.MONGODB_URI || "mongodb://localhost:27017/mydatabase";
@@ -35,10 +37,8 @@ app.use(express.json());
 // Use cors
 app.use(
   cors({
-    origin: "*",
-    methods: "GET,POST,PUT,DELETE,OPTIONS",
-    allowedHeaders: "Content-Type, Authorization",
-    credentials: true,
+    origin: "http://localhost:3000", // Replace with your frontend's origin
+    credentials: true, // This allows cookies and other credentials to be sent
   })
 );
 

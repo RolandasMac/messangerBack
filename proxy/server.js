@@ -12,7 +12,12 @@ dotenv.config({ path: path.resolve(__dirname, "../.env") });
 // const HOST = "localhost";
 const PORT = process.env.PROXYPORT || 5000;
 const HOST = process.env.HOST;
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000", // Replace with your frontend's origin
+    credentials: true, // This allows cookies and other credentials to be sent
+  })
+);
 
 const proxy = (port, url) => {
   return createProxyMiddleware({

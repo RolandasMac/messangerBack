@@ -225,10 +225,77 @@ exports.sendMessage = async (req) => {
       { _id: toConv },
       { $push: { messages: newMessage } },
       { new: true }
-    ); // Return the updated docu);
-    // console.log(oneConversation);
-    // res.status(200).json(conversationsList);
-    return { oneConversation, toConv };
+    );
+
+    const oneConv = await Conversations.aggregate(
+      [
+        {
+          $match: {
+            _id: new mongoose.Types.ObjectId(oneConversation._id),
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "convParticipants.userId",
+            foreignField: "_id",
+            as: "convParticipants1",
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "messages.ownerId",
+            foreignField: "_id",
+            as: "messageOwners",
+          },
+        },
+        {
+          $addFields: {
+            messages: {
+              $map: {
+                input: "$messages",
+                as: "message",
+                in: {
+                  message: "$$message.message",
+                  ownerId: "$$message.ownerId",
+                  createdAt: "$$message.createdAt",
+                  owner: {
+                    $arrayElemAt: [
+                      {
+                        $filter: {
+                          input: "$messageOwners",
+                          as: "owner",
+                          cond: {
+                            $eq: ["$$owner._id", "$$message.ownerId"],
+                          },
+                        },
+                      },
+                      0,
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            convParticipants1: 1,
+            lastMessage: {
+              $arrayElemAt: [
+                "$messages",
+                { $subtract: [{ $size: "$messages" }, 1] },
+              ],
+            },
+          },
+        },
+      ],
+      { maxTimeMS: 60000, allowDiskUse: true }
+    );
+
+    return oneConv;
   } catch (error) {
     // res.status(400).json({ message: error.message });
     return error;

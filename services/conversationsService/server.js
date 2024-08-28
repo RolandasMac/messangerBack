@@ -49,7 +49,7 @@ convService.on("chatMsg", async (req, cb) => {
   // console.log(req.data);
   const result = await conversationsController.sendMessage(req);
   // console.log(result);
-  cb(result);
+  cb(result[0]);
 });
 
 // ******************************************
