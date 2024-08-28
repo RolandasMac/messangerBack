@@ -8,6 +8,11 @@ const conversation = {
         type: mongoose.Schema.ObjectId,
         required: true,
       },
+      hasNewMsg: {
+        type: Number,
+        required: true,
+        default: 0,
+      },
     },
   ],
   messages: [

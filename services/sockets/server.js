@@ -31,6 +31,7 @@ let conectedUsers = [];
 // Handle socket connections
 io.on("connection", (socket) => {
   console.log("a user connected:", socket.id);
+  io.to(socket.id).emit("renewUserData");
   // Listen for custom data on connection
   socket.on("clientInfo", (data) => {
     const newData = { ...data, socketId: socket.id };

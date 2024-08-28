@@ -1,0 +1,18 @@
+const { sendCoteMessageToGetClientData } = require("../plugin");
+
+module.exports = {
+  authMiddleware: (req, res, next) => {
+    const token = req.cookies.authtoken;
+    // console.log(token + "123");
+    sendCoteMessageToGetClientData(token).then((response) => {
+      console.log("response", response);
+      if (!response) {
+        return res
+          .status(401)
+          .json({ success: false, message: "Autorizavimo klaidda serveryje" });
+      }
+      req.tokenInfo = response;
+      next();
+    });
+  },
+};

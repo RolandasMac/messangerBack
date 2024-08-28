@@ -1,4 +1,12 @@
 // server.js
+const fs = require("fs");
+const http = require("http");
+const https = require("https");
+const privateKey = fs.readFileSync("../../cert/private.key", "utf8");
+const certificate = fs.readFileSync("../../cert/certificate.crt", "utf8");
+
+const credentials = { key: privateKey, cert: certificate };
+
 const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
@@ -17,6 +25,7 @@ dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 const app = express();
 app.use(cookieParser());
 const PORT = process.env.AUTHPORT || 5000;
+const PORTSSL = process.env.AUTHPORTSSL;
 const MONGODB_URI =
   process.env.MONGODB_URI || "mongodb://localhost:27017/mydatabase";
 
@@ -37,7 +46,7 @@ app.use(express.json());
 // Use cors
 app.use(
   cors({
-    origin: "http://localhost:3000", // Replace with your frontend's origin
+    origin: "https://localhost:3000", // Replace with your frontend's origin
     credentials: true, // This allows cookies and other credentials to be sent
   })
 );
@@ -52,10 +61,14 @@ mongoose
 app.use("/", authRouter);
 
 // Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+// app.listen(PORT, () => {
+//   console.log(`Server is running on port ${PORT}`);
+// });
+var httpServer = http.createServer(app);
+var httpsServer = https.createServer(credentials, app);
 
+httpServer.listen(PORT);
+httpsServer.listen(PORTSSL);
 // cote service *****
 const User = require("./models/userSchema");
 const cote = require("cote");

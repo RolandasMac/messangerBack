@@ -1,3 +1,11 @@
+const fs = require("fs");
+const http = require("http");
+const https = require("https");
+const privateKey = fs.readFileSync("../cert/private.key", "utf8");
+const certificate = fs.readFileSync("../cert/certificate.crt", "utf8");
+
+const credentials = { key: privateKey, cert: certificate };
+
 const express = require("express");
 const { createProxyMiddleware } = require("http-proxy-middleware");
 const cors = require("cors");
@@ -14,7 +22,7 @@ const PORT = process.env.PROXYPORT || 5000;
 const HOST = process.env.HOST;
 app.use(
   cors({
-    origin: "http://localhost:3000", // Replace with your frontend's origin
+    origin: "https://localhost:3000", // Replace with your frontend's origin
     credentials: true, // This allows cookies and other credentials to be sent
   })
 );
@@ -47,6 +55,8 @@ app.use("/socket", proxy(5004, "socket"));
 app.use("/conversations", proxy(5005, "conversations"));
 // app.use("/update", proxy(1006, "update"));
 
-app.listen(PORT, HOST, () => {
-  console.log(`Proxy Started at: ${HOST}:${PORT}`);
-});
+// app.listen(PORT, HOST, () => {
+//   console.log(`Proxy Started at: ${HOST}:${PORT}`);
+// });
+const httpsServer = https.createServer(credentials, app);
+httpsServer.listen(PORT);

@@ -1,10 +1,5 @@
 const Conversations = require("../models/conversationsSchema");
 const mongoose = require("mongoose");
-// Example usage
-
-// findOrCreateConversation(participants, newMessage)
-//   .then((conversation) => console.log("Conversation:", conversation))
-//   .catch((error) => console.error(error));
 
 exports.test = async (req, res) => {
   try {
@@ -185,29 +180,101 @@ exports.getConvById = async (req, res) => {
 };
 
 exports.getConversationsList = async (req, res) => {
+  const { id } = req.tokenInfo;
+
+  const userId = "66cdb7e7aff7b6e274913c98";
+  // return res.status(200).json("Gaidys");
   try {
-    const conversationsList = await await Conversations.aggregate(
+    const conversationsList = await Conversations.aggregate(
       [
         {
+          $match: {
+            "convParticipants.userId": new mongoose.Types.ObjectId(id),
+          },
+        },
+        // {
+        //   $lookup: {
+        //     as: "participantsRes",
+        //     from: "users",
+        //     foreignField: "_id",
+        //     localField: "convParticipants.userId",
+        //   },
+        // },
+        // {
+        //   $project: {
+        //     _id: 1,
+        //     participantsRes: 1,
+        //     updatedAt: 1,
+        //   },
+        // },
+
+        { $unwind: "$convParticipants" },
+        {
           $lookup: {
-            as: "participantsRes",
             from: "users",
-            foreignField: "_id",
             localField: "convParticipants.userId",
+            foreignField: "_id",
+            as: "userData",
+          },
+        },
+        { $unwind: "$userData" },
+        {
+          $addFields: {
+            "convParticipants.userInfo": "$userData",
           },
         },
         {
-          $project: {
-            _id: 1,
-            participantsRes: 1,
-            updatedAt: 1,
+          $group: {
+            _id: "$_id",
+            convParticipants: {
+              $push: "$convParticipants",
+            },
+            messages: { $first: "$messages" },
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "messages.ownerId",
+            foreignField: "_id",
+            as: "messageOwnerData",
+          },
+        },
+        { $unwind: "$messages" },
+        {
+          $addFields: {
+            "messages.ownerInfo": {
+              $arrayElemAt: [
+                "$messageOwnerData",
+                {
+                  $indexOfArray: ["$messageOwnerData._id", "$messages.ownerId"],
+                },
+              ],
+            },
+          },
+        },
+        {
+          $group: {
+            _id: "$_id",
+            convParticipants: {
+              $first: "$convParticipants",
+            },
+            messages: { $push: "$messages" },
           },
         },
       ],
-      { maxTimeMS: 60000, allowDiskUse: true }
+      {
+        maxTimeMS: 60000,
+        allowDiskUse: true,
+        collation: "",
+      }
     );
     res.status(200).json(conversationsList);
   } catch (error) {
+    console.error(
+      "Kažkokia serverio klaida bandant gauti pokalbių sarašą",
+      error
+    );
     res.status(400).json({ message: error.message });
   }
 };
@@ -223,10 +290,12 @@ exports.sendMessage = async (req) => {
   try {
     const oneConversation = await Conversations.findOneAndUpdate(
       { _id: toConv },
-      { $push: { messages: newMessage } },
+      {
+        $push: { messages: newMessage },
+        $inc: { "convParticipants.$[].hasNewMsg": 1 },
+      },
       { new: true }
     );
-
     const oneConv = await Conversations.aggregate(
       [
         {
@@ -294,7 +363,6 @@ exports.sendMessage = async (req) => {
       ],
       { maxTimeMS: 60000, allowDiskUse: true }
     );
-
     return oneConv;
   } catch (error) {
     // res.status(400).json({ message: error.message });
@@ -302,36 +370,48 @@ exports.sendMessage = async (req) => {
   }
 };
 
-// exports.markAsCompleted = async (req, res) => {
-//   const { taskId, completed } = req.body;
-//   const userId = "66be44fc19199fe7bb2273eb";
+exports.testaskitas = async (req, res) => {
+  const { id } = req.tokenInfo;
 
-//   try {
-//     const result = await Todo.findOneAndUpdate(
-//       { _id: userId, "todos._id": taskId },
-//       { $set: { "todos.$.completed": completed } },
-//       { new: true }
-//     );
-//     console.log("Todo item marked as completed:", result);
-//     res.status(201).json(result.todos);
-//   } catch (error) {
-//     console.error("Error marking todo as completed:", error);
-//     res.status(400).json({ message: error.message });
-//   }
-// };
+  const userId = "66cdb7e7aff7b6e274913c98";
+  // return res.status(200).json("Gaidys");
+  try {
+    const conversationsList = await Conversations.aggregate(
+      [
+        {
+          $match: {
+            "convParticipants.userId": new mongoose.Types.ObjectId(id),
+          },
+        },
+        {
+          $lookup: {
+            as: "participantsRes",
+            from: "users",
+            foreignField: "_id",
+            localField: "convParticipants.userId",
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            participantsRes: 1,
+            updatedAt: 1,
+          },
+        },
+      ],
+      {
+        maxTimeMS: 60000,
+        allowDiskUse: true,
+        collation: "",
+      }
+    );
 
-// exports.deleteTodo = async (req, res) => {
-//   const userId = "66be44fc19199fe7bb2273eb";
-//   const { taskId } = req.body;
-//   try {
-//     const result = await Todo.findOneAndUpdate(
-//       { _id: userId },
-//       { $pull: { todos: { _id: taskId } } },
-//       { new: true }
-//     );
-//     return res.status(201).json(result.todos);
-//     res.status(200).json({ message: "User deleted successfully" });
-//   } catch (error) {
-//     res.status(400).json({ message: error.message });
-//   }
-// };
+    res.status(201).json({ message: "Nu gaidys", conversationsList });
+  } catch (error) {
+    console.error(
+      "Kažkokia serverio klaida bandant gauti pokalbių sarašą",
+      error
+    );
+    res.status(400).json({ message: error.message });
+  }
+};

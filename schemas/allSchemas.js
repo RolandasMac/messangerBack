@@ -58,6 +58,10 @@ module.exports = {
           type: String,
           required: true,
         },
+        hasNewMeg: {
+          type: Number,
+          required: true,
+        },
       },
     ],
     messages: [
