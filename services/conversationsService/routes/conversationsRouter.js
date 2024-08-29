@@ -15,7 +15,11 @@ router.get(
   authMiddleware,
   conversationsController.getConversationsList
 );
-router.get("/getconversationbyid/:convId", conversationsController.getConvById);
+router.post(
+  "/getconversationbyid/:convId",
+  authMiddleware,
+  conversationsController.getConvById
+);
 router.get("/testkitas", authMiddleware, conversationsController.testaskitas);
 
 module.exports = router;

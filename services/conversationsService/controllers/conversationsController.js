@@ -80,7 +80,31 @@ exports.Create = async (req, res, next) => {
   // console.log(participants);
   try {
     // Sort participants by userId to ensure consistency
+    // participants.sort((a, b) => a.userId.localeCompare(b.userId));
+    // // Create a query to find a conversation with exactly these participants
+    // const query = {
+    //   convParticipants: {
+    //     $all: participants.map((participant) => ({
+    //       $elemMatch: { userId: participant.userId },
+    //     })),
+    //   },
+    // };
+    // // Use findOneAndUpdate to either update or create the conversation
+    // const updatedConversation = await Conversations.findOneAndUpdate(
+    //   query,
+    //   {
+    //     $push: { messages: newMessage },
+    //     $setOnInsert: { convParticipants: participants },
+    //   },
+    //   {
+    //     new: true, // Return the updated document
+    //     upsert: true, // Create a new document if no match is found
+    //   }
+    // );
+
+    // Sort participants by userId to ensure consistency
     participants.sort((a, b) => a.userId.localeCompare(b.userId));
+
     // Create a query to find a conversation with exactly these participants
     const query = {
       convParticipants: {
@@ -89,18 +113,33 @@ exports.Create = async (req, res, next) => {
         })),
       },
     };
-    // Use findOneAndUpdate to either update or create the conversation
-    const updatedConversation = await Conversations.findOneAndUpdate(
-      query,
-      {
-        $push: { messages: newMessage },
-        $setOnInsert: { convParticipants: participants },
-      },
-      {
-        new: true, // Return the updated document
-        upsert: true, // Create a new document if no match is found
+
+    // Step 1: Find or create the conversation
+    let conversation = await Conversations.findOne(query);
+
+    if (!conversation) {
+      // Create a new conversation if not found
+      conversation = new Conversations({
+        convParticipants: participants,
+        messages: [newMessage],
+      });
+    } else {
+      // Step 2: Add the new message to the existing conversation
+      conversation.messages.push(newMessage);
+    }
+
+    // Step 3: Increment hasNewMsg for all participants except the message sender
+    conversation.convParticipants.forEach((participant) => {
+      if (participant.userId !== newMessage.ownerId) {
+        participant.hasNewMsg += 1;
       }
-    );
+    });
+
+    // Save the updated conversation
+    const updatedConversation = await conversation.save();
+
+    console.log("Updated or Created Conversation:", updatedConversation);
+
     // console.log(updatedConversation);
     // res.status(200).json(updatedConversation);
     req.params.convId = updatedConversation._id;
@@ -110,7 +149,32 @@ exports.Create = async (req, res, next) => {
   }
 };
 exports.getConvById = async (req, res) => {
+  const { id } = req.tokenInfo;
+  const { oldId } = req.body;
+  console.log("id, oldId   " + req.params.convId + " " + oldId);
   try {
+    const userIdToReset = id;
+
+    // Update the conversation by resetting the hasNewMsg for the specific userId
+    await Conversations.updateOne(
+      {
+        _id: req.params.convId, // The ID of the conversation to update
+        "convParticipants.userId": userIdToReset, // Match the specific userId in convParticipants
+      },
+      {
+        $set: { "convParticipants.$.hasNewMsg": 0 }, // Reset hasNewMsg for the matched userId
+      }
+    );
+    await Conversations.updateOne(
+      {
+        _id: oldId, // The ID of the conversation to update
+        "convParticipants.userId": userIdToReset, // Match the specific userId in convParticipants
+      },
+      {
+        $set: { "convParticipants.$.hasNewMsg": 0 }, // Reset hasNewMsg for the matched userId
+      }
+    );
+
     const oneConv = await Conversations.aggregate(
       [
         {
@@ -192,22 +256,6 @@ exports.getConversationsList = async (req, res) => {
             "convParticipants.userId": new mongoose.Types.ObjectId(id),
           },
         },
-        // {
-        //   $lookup: {
-        //     as: "participantsRes",
-        //     from: "users",
-        //     foreignField: "_id",
-        //     localField: "convParticipants.userId",
-        //   },
-        // },
-        // {
-        //   $project: {
-        //     _id: 1,
-        //     participantsRes: 1,
-        //     updatedAt: 1,
-        //   },
-        // },
-
         { $unwind: "$convParticipants" },
         {
           $lookup: {
@@ -259,7 +307,7 @@ exports.getConversationsList = async (req, res) => {
             convParticipants: {
               $first: "$convParticipants",
             },
-            messages: { $push: "$messages" },
+            // messages: { $push: "$messages" },
           },
         },
       ],
@@ -300,7 +348,7 @@ exports.sendMessage = async (req) => {
       [
         {
           $match: {
-            _id: new mongoose.Types.ObjectId(oneConversation._id),
+            _id: new mongoose.Types.ObjectId(toConv),
           },
         },
         {

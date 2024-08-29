@@ -5,7 +5,7 @@ module.exports = {
     const token = req.cookies.authtoken;
     // console.log(token + "123");
     sendCoteMessageToGetClientData(token).then((response) => {
-      console.log("response", response);
+      console.log("response123", response);
       if (!response) {
         return res
           .status(401)

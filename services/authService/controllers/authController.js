@@ -15,15 +15,15 @@ function generateVerificationCode() {
 
 exports.sendEmailCode = async (req, res) => {
   const { email } = req.body;
-  console.log(email);
 
   const subject = "Email tikrinimas";
   const userEmail = await User.findOne({ email: email }).select("email");
-
+  // console.log(userEmail);
+  // console.log("iki čia ateina");
   if (userEmail) {
     return res.status(200).json({
       message: "Toks el. paštas jau egzistuoja",
-      success: true,
+      success: false,
     });
   }
   const code = generateVerificationCode();
