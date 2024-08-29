@@ -7,6 +7,7 @@ const router = express.Router();
 router.get("/test", conversationsController.test);
 router.post(
   "/create",
+  authMiddleware,
   conversationsController.Create,
   conversationsController.getConvById
 );
