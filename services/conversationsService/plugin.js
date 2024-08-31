@@ -25,8 +25,22 @@ const sendCoteMessageNotifyClient = (data) => {
     });
   });
 };
+const client2 = new cote.Requester({
+  name: "Conversation notify con was deleted",
+  key: "ConversDel_Service_key",
+});
+
+const sendCoteMessageNotifyClientRenevdata = (data) => {
+  return new Promise((resolve) => {
+    client2.send({ type: "NotifyClientRenewData", data }, (getData) => {
+      console.log("išsiųsta");
+      resolve(getData);
+    });
+  });
+};
 
 module.exports = {
   sendCoteMessageToGetClientData,
   sendCoteMessageNotifyClient,
+  sendCoteMessageNotifyClientRenevdata,
 };

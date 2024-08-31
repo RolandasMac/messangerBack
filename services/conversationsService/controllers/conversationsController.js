@@ -2,7 +2,10 @@ const Conversations = require("../models/conversationsSchema");
 const mongoose = require("mongoose");
 
 //Cote service********
-const { sendCoteMessageNotifyClient } = require("../plugin");
+const {
+  sendCoteMessageNotifyClient,
+  sendCoteMessageNotifyClientRenevdata,
+} = require("../plugin");
 // const { log } = require("console");
 //*********************************
 
@@ -71,7 +74,7 @@ exports.test = async (req, res) => {
 };
 exports.Create = async (req, res, next) => {
   const { participants, newMessage, newConvCreate } = req.body;
-  console.log(newConvCreate.createNew);
+  // console.log(newConvCreate.createNew);
   try {
     // Sort participants by userId to ensure consistency
     participants.sort((a, b) => a.userId.localeCompare(b.userId));
@@ -592,7 +595,7 @@ exports.addnewparticipant = async (req, res) => {
         collation: "",
       }
     );
-    console.log(conversationsList);
+    // console.log(conversationsList);
     res.status(200).json(conversationsList);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -645,13 +648,87 @@ exports.testaskitas = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
-// exports.deleteConvById = async (req, res, next) => {
-//   const { id } = req.tokenInfo;
-//   const { convId } = req.params;
-//   console.log(convId);
-//   try {
-//     res.status(201).json({ message: "Nu gaidys", conversationsList });
-//   } catch (error) {
-//     res.status(400).json({ message: error.message });
-//   }
-// };
+exports.deleteConvById = async (req, res, next) => {
+  const { id } = req.tokenInfo;
+  const { convId } = req.params;
+
+  try {
+    const oneConv = await Conversations.aggregate(
+      [
+        {
+          $match: {
+            _id: new mongoose.Types.ObjectId(convId),
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "convParticipants.userId",
+            foreignField: "_id",
+            as: "convParticipants1",
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "messages.ownerId",
+            foreignField: "_id",
+            as: "messageOwners",
+          },
+        },
+        {
+          $addFields: {
+            messages: {
+              $map: {
+                input: "$messages",
+                as: "message",
+                in: {
+                  message: "$$message.message",
+                  ownerId: "$$message.ownerId",
+                  createdAt: "$$message.createdAt",
+                  owner: {
+                    $arrayElemAt: [
+                      {
+                        $filter: {
+                          input: "$messageOwners",
+                          as: "owner",
+                          cond: {
+                            $eq: ["$$owner._id", "$$message.ownerId"],
+                          },
+                        },
+                      },
+                      0,
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        },
+        {
+          $project: {
+            __v: 0,
+            convParticipants: 0,
+            messageOwners: 0,
+          },
+        },
+      ],
+      { maxTimeMS: 60000, allowDiskUse: true }
+    );
+    const deletedConversation = await Conversations.findByIdAndDelete(convId);
+    if (deletedConversation) {
+      console.log("Conversation deleted:", deletedConversation);
+      sendCoteMessageNotifyClientRenevdata(oneConv).then((response) => {
+        // console.log(response);
+      });
+    } else {
+      console.log("No conversation found with that ID.");
+    }
+
+    res
+      .status(201)
+      .json({ message: "Pokalbis ištrintas", deletedConversation });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};

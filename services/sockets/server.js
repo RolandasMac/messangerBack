@@ -9,6 +9,7 @@ const {
   sendCoteMessageDisconectedUser,
   sendCoteMessageGetNewChatMessage,
   convService,
+  convService1,
 } = require("./plugin");
 // const { log } = require("console");
 //*********************************
@@ -177,7 +178,18 @@ convService.on("NotifyClient", async (req, cb) => {
   });
   cb("Ok");
 });
-
+convService1.on("NotifyClientRenewData", async (req, cb) => {
+  console.log("Žinutė gautaaaaa" + req.data[0]);
+  const convId = req.data[0]._id;
+  console.log(convId);
+  req.data[0].convParticipants1.forEach((element) => {
+    if (element.socketId.length) {
+      // console.log(element.socketId);
+      io.to(element.socketId).emit("renewData", convId);
+    }
+  });
+  cb("Ok");
+});
 // ******************************************
 
 const PORT = process.env.SOCKET_PORT || 5004;
