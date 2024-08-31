@@ -8,6 +8,7 @@ const {
   sendCoteMessage,
   sendCoteMessageDisconectedUser,
   sendCoteMessageGetNewChatMessage,
+  convService,
 } = require("./plugin");
 // const { log } = require("console");
 //*********************************
@@ -86,7 +87,7 @@ io.on("connection", (socket) => {
       // console.log("response", response);
       response.convParticipants1.forEach((element) => {
         if (element.socketId.length) {
-          console.log(element.socketId);
+          // console.log(element.socketId);
           io.to(element.socketId).emit("newmessage", response);
         }
       });
@@ -150,6 +151,34 @@ io.on("connection", (socket) => {
     // });
   });
 });
+
+// Cote service**************************
+
+// const convService = new cote.Responder({
+//   name: "Conv Service responder",
+//   key: "Conv_Service_key",
+// });
+
+convService.on("NotifyClient", async (req, cb) => {
+  // console.log("Gaiti duomenys");
+  // console.log(req.data);
+  // const result = await conversationsController.sendMessage(req);
+  // console.log(req.data[0], convParticipants1);
+  const lastMessage = {
+    lastMessage: req.data[0].messages[req.data[0].messages.length - 1],
+    _id: req.data[0]._id,
+  };
+
+  req.data[0].convParticipants1.forEach((element) => {
+    if (element.socketId.length) {
+      // console.log(element.socketId);
+      io.to(element.socketId).emit("newmessage", lastMessage);
+    }
+  });
+  cb("Ok");
+});
+
+// ******************************************
 
 const PORT = process.env.SOCKET_PORT || 5004;
 server.listen(PORT, () => {

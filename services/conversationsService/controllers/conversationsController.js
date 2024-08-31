@@ -1,6 +1,11 @@
 const Conversations = require("../models/conversationsSchema");
 const mongoose = require("mongoose");
 
+//Cote service********
+const { sendCoteMessageNotifyClient } = require("../plugin");
+// const { log } = require("console");
+//*********************************
+
 exports.test = async (req, res) => {
   try {
     const conversationWithUsers = await Conversations.aggregate(
@@ -66,56 +71,32 @@ exports.test = async (req, res) => {
 };
 exports.Create = async (req, res, next) => {
   const { participants, newMessage } = req.body;
-  console.log(participants, newMessage);
-
-  // const participants = [
-  //   { id: "66c87613e5c09f86733010f4" },
-  //   { id: "66c8c9eeb18525d6f123e58e" },
-  // ];
-  // const newMessage = {
-  //   message: "ergergergergergergergergregerg",
-  //   ownerId: "66c87613e5c09f86733010f4",
-  //   createdAt: "2024-08-26T18:42:52.751Z",
-  // };
-  // console.log(participants);
+  console.log(participants);
   try {
     // Sort participants by userId to ensure consistency
-    // participants.sort((a, b) => a.userId.localeCompare(b.userId));
-    // // Create a query to find a conversation with exactly these participants
-    // const query = {
-    //   convParticipants: {
-    //     $all: participants.map((participant) => ({
-    //       $elemMatch: { userId: participant.userId },
-    //     })),
-    //   },
-    // };
-    // // Use findOneAndUpdate to either update or create the conversation
-    // const updatedConversation = await Conversations.findOneAndUpdate(
-    //   query,
-    //   {
-    //     $push: { messages: newMessage },
-    //     $setOnInsert: { convParticipants: participants },
-    //   },
-    //   {
-    //     new: true, // Return the updated document
-    //     upsert: true, // Create a new document if no match is found
-    //   }
-    // );
-
-    // Sort participants by userId to ensure consistency
     participants.sort((a, b) => a.userId.localeCompare(b.userId));
-
     // Create a query to find a conversation with exactly these participants
+    // ************************************
     const query = {
       convParticipants: {
         $all: participants.map((participant) => ({
           $elemMatch: { userId: participant.userId },
         })),
+        $size: participants.length,
       },
     };
 
     // Step 1: Find or create the conversation
     let conversation = await Conversations.findOne(query);
+    // ************************************************************************
+
+    // const conversation = await Conversations.findOne({
+    //   $and: [
+    //     { "convParticipants.userId": { $all: participants } }, // Matches all participant IDs
+    //     { convParticipants: { $size: participants.length } }, // Ensures the length matches
+    //   ],
+    // });
+    // console.log(conversation);
 
     if (!conversation) {
       // Create a new conversation if not found
@@ -138,20 +119,22 @@ exports.Create = async (req, res, next) => {
     // Save the updated conversation
     const updatedConversation = await conversation.save();
 
-    console.log("Updated or Created Conversation:", updatedConversation);
+    // console.log("Updated or Created Conversation:", updatedConversation);
 
     // console.log(updatedConversation);
     // res.status(200).json(updatedConversation);
+
     req.params.convId = updatedConversation._id;
+
     next();
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
-exports.getConvById = async (req, res) => {
+exports.getConvById = async (req, res, next) => {
   const { id } = req.tokenInfo;
   const { oldId } = req.body;
-  console.log("id, oldId   " + req.params.convId + " " + oldId);
+  // console.log("id, oldId   " + req.params.convId + " " + oldId);
   try {
     const userIdToReset = id;
 
@@ -174,7 +157,7 @@ exports.getConvById = async (req, res) => {
         $set: { "convParticipants.$.hasNewMsg": 0 }, // Reset hasNewMsg for the matched userId
       }
     );
-
+    // senas variantas be socket
     const oneConv = await Conversations.aggregate(
       [
         {
@@ -237,10 +220,97 @@ exports.getConvById = async (req, res) => {
       ],
       { maxTimeMS: 60000, allowDiskUse: true }
     );
-    res.status(200).json(oneConv[0]);
+    req.oneConv = oneConv;
+
+    // *************Socket pranešimas apie gautą žinutę********************
+
+    // notify socket server to send socket to recipients
+
+    // console.log("before agregation");
+
+    // const oneConv1 = await Conversations.aggregate(
+    //   [
+    //     {
+    //       $match: {
+    //         _id: new mongoose.Types.ObjectId(req.params.convId),
+    //       },
+    //     },
+    //     {
+    //       $lookup: {
+    //         from: "users",
+    //         localField: "convParticipants.userId",
+    //         foreignField: "_id",
+    //         as: "convParticipants1",
+    //       },
+    //     },
+    //     {
+    //       $lookup: {
+    //         from: "users",
+    //         localField: "messages.ownerId",
+    //         foreignField: "_id",
+    //         as: "messageOwners",
+    //       },
+    //     },
+    //     {
+    //       $addFields: {
+    //         messages: {
+    //           $map: {
+    //             input: "$messages",
+    //             as: "message",
+    //             in: {
+    //               message: "$$message.message",
+    //               ownerId: "$$message.ownerId",
+    //               createdAt: "$$message.createdAt",
+    //               owner: {
+    //                 $arrayElemAt: [
+    //                   {
+    //                     $filter: {
+    //                       input: "$messageOwners",
+    //                       as: "owner",
+    //                       cond: {
+    //                         $eq: ["$$owner._id", "$$message.ownerId"],
+    //                       },
+    //                     },
+    //                   },
+    //                   0,
+    //                 ],
+    //               },
+    //             },
+    //           },
+    //         },
+    //       },
+    //     },
+    //     {
+    //       $project: {
+    //         _id: 1,
+    //         convParticipants1: 1,
+    //         lastMessage: {
+    //           $arrayElemAt: [
+    //             "$messages",
+    //             { $subtract: [{ $size: "$messages" }, 1] },
+    //           ],
+    //         },
+    //       },
+    //     },
+    //   ],
+    //   { maxTimeMS: 60000, allowDiskUse: true }
+    // );
+
+    // console.log(oneConv[0].convParticipants1);
+    // console.log("Before message send");
+    next();
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
+};
+exports.sendDataById = async (req, res) => {
+  res.status(200).json(req.oneConv[0]);
+};
+exports.notifyClientBySocket = async (req, res) => {
+  sendCoteMessageNotifyClient(req.oneConv).then((response) => {
+    // console.log(response);
+  });
+  res.status(200).json(req.oneConv[0]);
 };
 
 exports.getConversationsList = async (req, res) => {
@@ -336,14 +406,31 @@ exports.sendMessage = async (req) => {
     createdAt: new Date(),
   };
   try {
+    // const oneConversation = await Conversations.findOneAndUpdate(
+    //   { _id: toConv },
+    //   {
+    //     $push: { messages: newMessage },
+    //     $inc: { "convParticipants.$[].hasNewMsg": 1 },
+    //   },
+    //   { new: true }
+    // );
+
+    const excludedUserId = userId;
+
     const oneConversation = await Conversations.findOneAndUpdate(
       { _id: toConv },
       {
         $push: { messages: newMessage },
-        $inc: { "convParticipants.$[].hasNewMsg": 1 },
+        $inc: {
+          "convParticipants.$[elem].hasNewMsg": 1,
+        },
       },
-      { new: true }
+      {
+        arrayFilters: [{ "elem.userId": { $ne: excludedUserId } }],
+        new: true,
+      }
     );
+
     const oneConv = await Conversations.aggregate(
       [
         {
@@ -414,6 +501,101 @@ exports.sendMessage = async (req) => {
     return oneConv;
   } catch (error) {
     // res.status(400).json({ message: error.message });
+    return error;
+  }
+};
+
+exports.addnewparticipant = async (req, res) => {
+  const { convId } = req.params;
+  const { userId } = req.body;
+  const { id } = req.tokenInfo;
+  const newParticipant = {
+    hasNewMsg: 0,
+    userId: userId,
+  };
+  try {
+    const oneUpdatedConversation = await Conversations.findOneAndUpdate(
+      { _id: convId },
+      {
+        $push: { convParticipants: newParticipant },
+        // $inc: { "convParticipants.$[].hasNewMsg": 1 },
+      },
+      { new: true }
+    );
+
+    // console.log(oneUpdatedConversation);
+    const conversationsList = await Conversations.aggregate(
+      [
+        {
+          $match: {
+            "convParticipants.userId": new mongoose.Types.ObjectId(id),
+          },
+        },
+        { $unwind: "$convParticipants" },
+        {
+          $lookup: {
+            from: "users",
+            localField: "convParticipants.userId",
+            foreignField: "_id",
+            as: "userData",
+          },
+        },
+        { $unwind: "$userData" },
+        {
+          $addFields: {
+            "convParticipants.userInfo": "$userData",
+          },
+        },
+        {
+          $group: {
+            _id: "$_id",
+            convParticipants: {
+              $push: "$convParticipants",
+            },
+            messages: { $first: "$messages" },
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "messages.ownerId",
+            foreignField: "_id",
+            as: "messageOwnerData",
+          },
+        },
+        { $unwind: "$messages" },
+        {
+          $addFields: {
+            "messages.ownerInfo": {
+              $arrayElemAt: [
+                "$messageOwnerData",
+                {
+                  $indexOfArray: ["$messageOwnerData._id", "$messages.ownerId"],
+                },
+              ],
+            },
+          },
+        },
+        {
+          $group: {
+            _id: "$_id",
+            convParticipants: {
+              $first: "$convParticipants",
+            },
+            // messages: { $push: "$messages" },
+          },
+        },
+      ],
+      {
+        maxTimeMS: 60000,
+        allowDiskUse: true,
+        collation: "",
+      }
+    );
+    console.log(conversationsList);
+    res.status(200).json(conversationsList);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
     return error;
   }
 };

@@ -12,7 +12,21 @@ const sendCoteMessageToGetClientData = (token) => {
     });
   });
 };
+const client1 = new cote.Requester({
+  name: "Conversation notify new msg send",
+  key: "Convers_Service_key",
+});
+
+const sendCoteMessageNotifyClient = (data) => {
+  return new Promise((resolve) => {
+    client1.send({ type: "NotifyClient", data }, (getData) => {
+      // console.log("išsiųsta");
+      resolve(getData);
+    });
+  });
+};
 
 module.exports = {
   sendCoteMessageToGetClientData,
+  sendCoteMessageNotifyClient,
 };

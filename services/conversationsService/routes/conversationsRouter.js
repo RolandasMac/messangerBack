@@ -9,7 +9,8 @@ router.post(
   "/create",
   authMiddleware,
   conversationsController.Create,
-  conversationsController.getConvById
+  conversationsController.getConvById,
+  conversationsController.notifyClientBySocket
 );
 router.get(
   "/getconversationslist",
@@ -19,7 +20,13 @@ router.get(
 router.post(
   "/getconversationbyid/:convId",
   authMiddleware,
-  conversationsController.getConvById
+  conversationsController.getConvById,
+  conversationsController.sendDataById
+);
+router.post(
+  "/addnewparticipant/:convId",
+  authMiddleware,
+  conversationsController.addnewparticipant
 );
 router.get("/testkitas", authMiddleware, conversationsController.testaskitas);
 

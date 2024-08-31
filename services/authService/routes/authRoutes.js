@@ -17,6 +17,7 @@ router.post(
 router.post("/login", authController.login);
 router.get("/getallusers", authMiddleware, authController.getAllUsers);
 router.post("/autologin", authController.autologin);
+router.get("/logout", authMiddleware, authController.logout);
 
 // router.get("/labas", authController.test);
 // router.get("/labas1", authMiddleware, authController.testgauti);

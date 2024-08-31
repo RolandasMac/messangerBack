@@ -200,17 +200,27 @@ exports.getOneUser = async (req, res) => {
   }
 };
 
-// exports.deleteUser = async (req, res) => {
-//   try {
-//     const user = await User.findByIdAndDelete(req.params.id);
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
-//     res.status(200).json({ message: "User deleted successfully" });
-//   } catch (error) {
-//     res.status(400).json({ message: error.message });
-//   }
-// };
+exports.logout = async (req, res) => {
+  try {
+    res.clearCookie("authtoken", { httpOnly: true });
+    res.status(200).json({
+      success: true,
+      message: "Jūs sėkmingai atsijungėte",
+      userData: {
+        email: "",
+        id: "",
+        name: "",
+        photo: "",
+        createdAt: "",
+        updatedAt: "",
+        lastloggedAt: "",
+        isOnline: false,
+      },
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
 exports.test = async (req, res) => {
   res.cookie("authtoken", "Gaidys", {
     maxAge: 900000,
