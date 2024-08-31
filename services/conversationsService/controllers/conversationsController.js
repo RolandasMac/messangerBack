@@ -70,8 +70,8 @@ exports.test = async (req, res) => {
   }
 };
 exports.Create = async (req, res, next) => {
-  const { participants, newMessage } = req.body;
-  console.log(participants);
+  const { participants, newMessage, newConvCreate } = req.body;
+  console.log(newConvCreate.createNew);
   try {
     // Sort participants by userId to ensure consistency
     participants.sort((a, b) => a.userId.localeCompare(b.userId));
@@ -98,7 +98,7 @@ exports.Create = async (req, res, next) => {
     // });
     // console.log(conversation);
 
-    if (!conversation) {
+    if (!conversation || newConvCreate.createNew) {
       // Create a new conversation if not found
       conversation = new Conversations({
         convParticipants: participants,
@@ -645,3 +645,13 @@ exports.testaskitas = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+// exports.deleteConvById = async (req, res, next) => {
+//   const { id } = req.tokenInfo;
+//   const { convId } = req.params;
+//   console.log(convId);
+//   try {
+//     res.status(201).json({ message: "Nu gaidys", conversationsList });
+//   } catch (error) {
+//     res.status(400).json({ message: error.message });
+//   }
+// };

@@ -51,34 +51,35 @@ module.exports = {
       },
     ],
   },
-  conversations: {
-    convParticipants: [
-      {
-        userId: {
-          type: String,
-          required: true,
-        },
-        hasNewMeg: {
-          type: Number,
-          required: true,
-        },
-      },
-    ],
-    messages: [
-      {
-        message: {
-          type: String,
-          required: true,
-        },
-        ownerId: {
-          type: String,
-          required: true,
-        },
-        createdAt: {
-          type: String,
-          required: true,
-        },
-      },
-    ],
-  },
+  // conversations: {
+  //   convParticipants: [
+  //     {
+  //       userId: {
+  //         type: mongoose.Schema.ObjectId,
+  //         required: true,
+  //       },
+  //       hasNewMsg: {
+  //         type: Number,
+  //         required: true,
+  //         default: 0,
+  //       },
+  //     },
+  //   ],
+  //   messages: [
+  //     {
+  //       message: {
+  //         type: String,
+  //         required: true,
+  //       },
+  //       ownerId: {
+  //         type: mongoose.Schema.ObjectId,
+  //         required: true,
+  //       },
+  //       createdAt: {
+  //         type: String,
+  //         required: true,
+  //       },
+  //     },
+  //   ],
+  // },
 };

@@ -28,6 +28,11 @@ router.post(
   authMiddleware,
   conversationsController.addnewparticipant
 );
+// router.get(
+//   "/deleteconversationbyid/:convId",
+//   authMiddleware,
+//   conversationsController.deleteConvById
+// );
 router.get("/testkitas", authMiddleware, conversationsController.testaskitas);
 
 module.exports = router;
