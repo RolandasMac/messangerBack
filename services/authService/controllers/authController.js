@@ -40,7 +40,7 @@ exports.sendEmailCode = async (req, res) => {
 };
 
 exports.createUser = async (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
 
   const { code, name, password1 } = req.body;
   const email = authPlugin.getEmailByCode(code);
@@ -289,6 +289,50 @@ exports.changeAvatar = async (req, res) => {
     res.status(201).json({
       message: "new user was created",
       updatedUser,
+      success: true,
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+exports.changePassword = async (req, res) => {
+  const userInfo = req.tokenInfo;
+  const { password, password1, password2 } = req.body;
+  console.log(userInfo + password + password1 + password2);
+
+  // const { code, name, password1 } = req.body;
+  // const email = authPlugin.getEmailByCode(code);
+  // if (!email) {
+  //   return res.status(400).json({ success: false, error: "Neteisingas kodas" });
+  // }
+  try {
+    const user = await User.findOneAndUpdate(
+      { email: userInfo.email },
+      { isOnline: true, lastloggedAt: new Date() },
+      { new: true }
+    );
+    if (!user) {
+      res.status(401).json({ success: false, message: "Tokio vartotojo nėra" });
+    }
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatch) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Blogas slaptažodis" });
+    }
+    const salt = await bcrypt.genSalt(10);
+    const passHash = await bcrypt.hash(password1, salt);
+    const changedPassword = passHash;
+    const updatedUser = await User.findOneAndUpdate(
+      { email: userInfo.email }, // Filter by email
+      { password: changedPassword }, // Update the password
+      { new: true, useFindAndModify: false } // Options: return the updated document
+    );
+
+    res.status(201).json({
+      message: "The password has been changed!",
+      userData: updatedUser,
       success: true,
     });
   } catch (error) {

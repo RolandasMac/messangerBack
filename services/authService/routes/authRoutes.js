@@ -27,6 +27,11 @@ router.post(
   authMiddleware,
   authController.changeAvatar
 );
+router.post(
+  "/changeuserpassword",
+  authMiddleware1,
+  authController.changePassword
+);
 
 // router.get("/labas", authController.test);
 // router.get("/labas1", authMiddleware, authController.testgauti);
