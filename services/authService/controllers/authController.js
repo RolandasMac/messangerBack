@@ -191,10 +191,31 @@ exports.getAllUsers = async (req, res) => {
 exports.getOneUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
+    const {
+      createdAt,
+      email,
+      _id,
+      isOnline,
+      lastloggedAt,
+      name,
+      photo,
+      updatedAt,
+    } = user;
+    const newUser = {
+      createdAt,
+      email,
+      id: _id,
+      _id,
+      isOnline,
+      lastloggedAt,
+      name,
+      photo,
+      updatedAt,
+    };
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.status(200).json(user);
+    res.status(200).json(newUser);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -232,4 +253,45 @@ exports.test = async (req, res) => {
 };
 exports.testgauti = async (req, res) => {
   res.status(200).json(req.tokenInfo);
+};
+
+exports.changeAvatar = async (req, res) => {
+  // const { code, name, password1 } = req.body;
+  // const email = authPlugin.getEmailByCode(code);
+  // if (!email) {
+  //   return res.status(400).json({ success: false, error: "Neteisingas kodas" });
+  // }
+  try {
+    // let image1 = await sendCoteImage(image);
+
+    // const salt = await bcrypt.genSalt(10);
+    // const passHash = await bcrypt.hash(password1, salt);
+    // const password = passHash;
+
+    const updatedUser = await User.findOneAndUpdate(
+      { email: req.tokenInfo.email }, // Find the user by email
+      { photo: req.imageurl }, // Update the photo
+      { new: true } // Return the updated document
+    );
+
+    // if (updatedUser) {
+    // console.log("Photo updated successfully:", updatedUser);
+    // } else {
+    //   console.log("User not found with the provided email.");
+    // }
+
+    // const newUser = await User.create({
+    //   name: name,
+    //   password: password,
+    //   email: email,
+    //   photo: req.imageurl,
+    // });
+    res.status(201).json({
+      message: "new user was created",
+      updatedUser,
+      success: true,
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
 };

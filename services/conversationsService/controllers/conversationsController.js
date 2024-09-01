@@ -595,6 +595,71 @@ exports.addnewparticipant = async (req, res) => {
         collation: "",
       }
     );
+    const oneConv = await Conversations.aggregate(
+      [
+        {
+          $match: {
+            _id: new mongoose.Types.ObjectId(convId),
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "convParticipants.userId",
+            foreignField: "_id",
+            as: "convParticipants1",
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "messages.ownerId",
+            foreignField: "_id",
+            as: "messageOwners",
+          },
+        },
+        {
+          $addFields: {
+            messages: {
+              $map: {
+                input: "$messages",
+                as: "message",
+                in: {
+                  message: "$$message.message",
+                  ownerId: "$$message.ownerId",
+                  createdAt: "$$message.createdAt",
+                  owner: {
+                    $arrayElemAt: [
+                      {
+                        $filter: {
+                          input: "$messageOwners",
+                          as: "owner",
+                          cond: {
+                            $eq: ["$$owner._id", "$$message.ownerId"],
+                          },
+                        },
+                      },
+                      0,
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        },
+        {
+          $project: {
+            __v: 0,
+            convParticipants: 0,
+            messageOwners: 0,
+          },
+        },
+      ],
+      { maxTimeMS: 60000, allowDiskUse: true }
+    );
+    sendCoteMessageNotifyClientRenevdata(oneConv).then((response) => {
+      // console.log(response);
+    });
     // console.log(conversationsList);
     res.status(200).json(conversationsList);
   } catch (error) {
@@ -717,7 +782,7 @@ exports.deleteConvById = async (req, res, next) => {
     );
     const deletedConversation = await Conversations.findByIdAndDelete(convId);
     if (deletedConversation) {
-      console.log("Conversation deleted:", deletedConversation);
+      // console.log("Conversation deleted:", deletedConversation);
       sendCoteMessageNotifyClientRenevdata(oneConv).then((response) => {
         // console.log(response);
       });
