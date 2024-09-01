@@ -29,6 +29,7 @@ const conversation = {
         type: String,
         required: true,
       },
+      likes: [],
     },
   ],
 };

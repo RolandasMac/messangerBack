@@ -33,6 +33,7 @@ router.get(
   authMiddleware,
   conversationsController.deleteConvById
 );
-router.get("/testkitas", authMiddleware, conversationsController.testaskitas);
+router.post("/addlike", authMiddleware, conversationsController.addLike);
+// router.get("/testkitas", authMiddleware, conversationsController.addLike);
 
 module.exports = router;

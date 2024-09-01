@@ -162,145 +162,144 @@ exports.getConvById = async (req, res, next) => {
     );
     // senas variantas be socket
     const oneConv = await Conversations.aggregate(
+      // [
+      //   {
+      //     $match: {
+      //       _id: new mongoose.Types.ObjectId(req.params.convId),
+      //     },
+      //   },
+      //   {
+      //     $lookup: {
+      //       from: "users",
+      //       localField: "convParticipants.userId",
+      //       foreignField: "_id",
+      //       as: "convParticipants1",
+      //     },
+      //   },
+      //   {
+      //     $lookup: {
+      //       from: "users",
+      //       localField: "messages.ownerId",
+      //       foreignField: "_id",
+      //       as: "messageOwners",
+      //     },
+      //   },
+      //   {
+      //     $addFields: {
+      //       messages: {
+      //         $map: {
+      //           input: "$messages",
+      //           as: "message",
+      //           in: {
+      //             message: "$$message.message",
+      //             ownerId: "$$message.ownerId",
+      //             createdAt: "$$message.createdAt",
+      //             owner: {
+      //               $arrayElemAt: [
+      //                 {
+      //                   $filter: {
+      //                     input: "$messageOwners",
+      //                     as: "owner",
+      //                     cond: {
+      //                       $eq: ["$$owner._id", "$$message.ownerId"],
+      //                     },
+      //                   },
+      //                 },
+      //                 0,
+      //               ],
+      //             },
+      //           },
+      //         },
+      //       },
+      //     },
+      //   },
+      //   {
+      //     $project: {
+      //       __v: 0,
+      //       convParticipants: 0,
+      //       messageOwners: 0,
+      //     },
+      //   },
+      // ],
       [
-        {
-          $match: {
-            _id: new mongoose.Types.ObjectId(req.params.convId),
+        [
+          {
+            $match: {
+              _id: new mongoose.Types.ObjectId(req.params.convId),
+            },
           },
-        },
-        {
-          $lookup: {
-            from: "users",
-            localField: "convParticipants.userId",
-            foreignField: "_id",
-            as: "convParticipants1",
+          {
+            $lookup: {
+              from: "users",
+              localField: "convParticipants.userId",
+              foreignField: "_id",
+              as: "convParticipants1",
+            },
           },
-        },
-        {
-          $lookup: {
-            from: "users",
-            localField: "messages.ownerId",
-            foreignField: "_id",
-            as: "messageOwners",
+          {
+            $lookup: {
+              from: "users",
+              localField: "messages.ownerId",
+              foreignField: "_id",
+              as: "messageOwners",
+            },
           },
-        },
-        {
-          $addFields: {
-            messages: {
-              $map: {
-                input: "$messages",
-                as: "message",
-                in: {
-                  message: "$$message.message",
-                  ownerId: "$$message.ownerId",
-                  createdAt: "$$message.createdAt",
-                  owner: {
-                    $arrayElemAt: [
-                      {
-                        $filter: {
-                          input: "$messageOwners",
-                          as: "owner",
-                          cond: {
-                            $eq: ["$$owner._id", "$$message.ownerId"],
+          {
+            $addFields: {
+              messages: {
+                $map: {
+                  input: "$messages",
+                  as: "message",
+                  in: {
+                    _id: "$$message._id", // Include the message _id
+                    message: "$$message.message",
+                    ownerId: "$$message.ownerId",
+                    createdAt: "$$message.createdAt",
+                    likes: "$$message.likes",
+                    owner: {
+                      $arrayElemAt: [
+                        {
+                          $map: {
+                            input: {
+                              $filter: {
+                                input: "$messageOwners",
+                                as: "owner",
+                                cond: {
+                                  $eq: ["$$owner._id", "$$message.ownerId"],
+                                },
+                              },
+                            },
+                            as: "owner",
+                            in: {
+                              _id: "$$owner._id", // Include the owner's _id
+                              name: "$$owner.name", // Include any other fields you need from the owner
+                              email: "$$owner.email",
+                              photo: "$$owner.photo",
+                            },
                           },
                         },
-                      },
-                      0,
-                    ],
+                        0,
+                      ],
+                    },
                   },
                 },
               },
             },
           },
-        },
-        {
-          $project: {
-            __v: 0,
-            convParticipants: 0,
-            messageOwners: 0,
+          {
+            $project: {
+              __v: 0,
+              convParticipants: 0,
+              "convParticipants1.password": 0, // Exclude password from convParticipants1
+              messageOwners: 0, // Exclude the intermediate messageOwners array
+            },
           },
-        },
+        ],
       ],
       { maxTimeMS: 60000, allowDiskUse: true }
     );
     req.oneConv = oneConv;
 
-    // *************Socket pranešimas apie gautą žinutę********************
-
-    // notify socket server to send socket to recipients
-
-    // console.log("before agregation");
-
-    // const oneConv1 = await Conversations.aggregate(
-    //   [
-    //     {
-    //       $match: {
-    //         _id: new mongoose.Types.ObjectId(req.params.convId),
-    //       },
-    //     },
-    //     {
-    //       $lookup: {
-    //         from: "users",
-    //         localField: "convParticipants.userId",
-    //         foreignField: "_id",
-    //         as: "convParticipants1",
-    //       },
-    //     },
-    //     {
-    //       $lookup: {
-    //         from: "users",
-    //         localField: "messages.ownerId",
-    //         foreignField: "_id",
-    //         as: "messageOwners",
-    //       },
-    //     },
-    //     {
-    //       $addFields: {
-    //         messages: {
-    //           $map: {
-    //             input: "$messages",
-    //             as: "message",
-    //             in: {
-    //               message: "$$message.message",
-    //               ownerId: "$$message.ownerId",
-    //               createdAt: "$$message.createdAt",
-    //               owner: {
-    //                 $arrayElemAt: [
-    //                   {
-    //                     $filter: {
-    //                       input: "$messageOwners",
-    //                       as: "owner",
-    //                       cond: {
-    //                         $eq: ["$$owner._id", "$$message.ownerId"],
-    //                       },
-    //                     },
-    //                   },
-    //                   0,
-    //                 ],
-    //               },
-    //             },
-    //           },
-    //         },
-    //       },
-    //     },
-    //     {
-    //       $project: {
-    //         _id: 1,
-    //         convParticipants1: 1,
-    //         lastMessage: {
-    //           $arrayElemAt: [
-    //             "$messages",
-    //             { $subtract: [{ $size: "$messages" }, 1] },
-    //           ],
-    //         },
-    //       },
-    //     },
-    //   ],
-    //   { maxTimeMS: 60000, allowDiskUse: true }
-    // );
-
-    // console.log(oneConv[0].convParticipants1);
-    // console.log("Before message send");
     next();
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -407,6 +406,7 @@ exports.sendMessage = async (req) => {
     message: message,
     ownerId: userId,
     createdAt: new Date(),
+    likes: [],
   };
   try {
     // const oneConversation = await Conversations.findOneAndUpdate(
@@ -467,6 +467,7 @@ exports.sendMessage = async (req) => {
                   message: "$$message.message",
                   ownerId: "$$message.ownerId",
                   createdAt: "$$message.createdAt",
+                  likes: [],
                   owner: {
                     $arrayElemAt: [
                       {
@@ -790,6 +791,19 @@ exports.deleteConvById = async (req, res, next) => {
       console.log("No conversation found with that ID.");
     }
 
+    res
+      .status(201)
+      .json({ message: "Pokalbis ištrintas", deletedConversation });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+exports.addLike = async (req, res, next) => {
+  const { id } = req.tokenInfo;
+  const { convId, msgId } = req.body;
+
+  console.log(req.body);
+  try {
     res
       .status(201)
       .json({ message: "Pokalbis ištrintas", deletedConversation });

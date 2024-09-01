@@ -339,3 +339,44 @@ exports.changePassword = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+exports.changeEmail = async (req, res) => {
+  const userInfo = req.tokenInfo;
+  const { password, code, email } = req.body;
+  const newEmail = authPlugin.getEmailByCode(code);
+  if (!newEmail) {
+    return res.status(400).json({ success: false, error: "Neteisingas kodas" });
+  }
+  console.log("Čia dar veikia");
+  try {
+    const user = await User.findOneAndUpdate(
+      { email: userInfo.email },
+      { isOnline: true, lastloggedAt: new Date() },
+      { new: true }
+    );
+    if (!user) {
+      res.status(401).json({ success: false, message: "Tokio vartotojo nėra" });
+    }
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatch) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Blogas slaptažodis" });
+    }
+    console.log("Čia dar veikia");
+
+    const updatedUser = await User.findOneAndUpdate(
+      { email: userInfo.email }, // Filter by email
+      { email: newEmail }, // Update the email
+      { new: true, useFindAndModify: false } // Options: return the updated document
+    );
+
+    res.status(201).json({
+      message: "The email has been changed!",
+      userData: updatedUser,
+      success: true,
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};

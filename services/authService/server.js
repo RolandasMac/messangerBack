@@ -78,19 +78,19 @@ const authService = new cote.Responder({
 });
 
 authService.on("auth", async (req, cb) => {
-  console.log(req.data);
+  // console.log(req.data);
   let id = req.data.id;
   const result = await User.findOneAndUpdate(
     { _id: id },
     { isOnline: true, socketId: req.data.socketId, lastloggedAt: new Date() },
     { new: true }
   );
-  console.log("Gaidys");
-  console.log(result);
+  // console.log("Gaidys");
+  // console.log(result);
   cb(result);
 });
 authService.on("disconect", async (req, cb) => {
-  console.log(req.data.socketId);
+  // console.log(req.data.socketId);
   // let id = req.data.id;
   const result = await User.findOneAndUpdate(
     { socketId: req.data.socketId },

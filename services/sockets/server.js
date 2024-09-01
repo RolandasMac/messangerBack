@@ -96,7 +96,7 @@ io.on("connection", (socket) => {
   });
   // User disconected event
   socket.on("userdisconected", async () => {
-    console.log("user disconected" + socket.id);
+    // console.log("user disconected" + socket.id);
     // send cote message ********
     sendCoteMessageDisconectedUser({ socketId: socket.id }).then((response) => {
       console.log("response", response);
@@ -179,9 +179,9 @@ convService.on("NotifyClient", async (req, cb) => {
   cb("Ok");
 });
 convService1.on("NotifyClientRenewData", async (req, cb) => {
-  console.log("Žinutė gautaaaaa" + req.data[0]);
+  // console.log("Žinutė gautaaaaa" + req.data[0]);
   const convId = req.data[0]._id;
-  console.log(convId);
+  // console.log(convId);
   req.data[0].convParticipants1.forEach((element) => {
     if (element.socketId.length) {
       // console.log(element.socketId);
