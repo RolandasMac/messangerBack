@@ -7,6 +7,9 @@ const router = express.Router();
 
 const { authMiddleware } = require("../middleware/authMiddleware");
 const { authMiddleware1 } = require("../middleware/authMiddleware1");
+const {
+  passwordValidateMiddleware,
+} = require("../middleware/passwordValidateMiddleware");
 
 router.post("/sendemailcode", authController.sendEmailCode);
 router.post(
@@ -30,12 +33,10 @@ router.post(
 router.post(
   "/changeuserpassword",
   authMiddleware1,
+  passwordValidateMiddleware,
   authController.changePassword
 );
 router.post("/changeuseremail", authMiddleware1, authController.changeEmail);
-
-// router.get("/labas", authController.test);
-// router.get("/labas1", authMiddleware, authController.testgauti);
 
 router.get("/:id", authMiddleware1, authController.getOneUser);
 
