@@ -11,6 +11,7 @@ const {
   convService,
   convService1,
   convService2,
+  convService3,
 } = require("./plugin");
 // const { log } = require("console");
 //*********************************
@@ -200,7 +201,7 @@ convService1.on("NotifyClientRenewData", async (req, cb) => {
 });
 convService2.on("NotifyClientRenewOneConvData", async (req, cb) => {
   console.log("Žinutė gautaaaaa");
-  console.log(req.data);
+  // console.log(req.data);
   const convId = req.data[0]._id;
   // console.log(convId);
   req.data[0].convParticipants1.forEach((element) => {
@@ -209,6 +210,13 @@ convService2.on("NotifyClientRenewOneConvData", async (req, cb) => {
       io.to(element.socketId).emit("renewOneConvData", convId);
     }
   });
+  cb("Ok");
+});
+
+convService3.on("renewUserData", async (req, cb) => {
+  // console.log("Žinutė gauta");
+  // console.log(req.data);
+  io.emit("renewOneUserData", req.data);
   cb("Ok");
 });
 // ******************************************

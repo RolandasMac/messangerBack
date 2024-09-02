@@ -7,6 +7,9 @@ const { makeRequest, sendCoteImage } = require("../plugins/imagePlugin");
 const cote = require("cote");
 const client = new cote.Requester({ name: "Client" });
 const jwt = require("jsonwebtoken");
+const {
+  sendCoteMessageToinformAvatarChange,
+} = require("../plugins/cotePlugin");
 
 // Generate a 6-digit code
 function generateVerificationCode() {
@@ -189,6 +192,7 @@ exports.getAllUsers = async (req, res) => {
 };
 
 exports.getOneUser = async (req, res) => {
+  console.log(req.params.id);
   try {
     const user = await User.findById(req.params.id);
     const {
@@ -262,6 +266,10 @@ exports.changeAvatar = async (req, res) => {
       { photo: req.imageurl }, // Update the photo
       { new: true } // Return the updated document
     );
+
+    sendCoteMessageToinformAvatarChange(updatedUser._id).then((response) => {
+      console.log("Cote Cote informavo apie pristatymą");
+    });
 
     res.status(201).json({
       message: "new user was created",
