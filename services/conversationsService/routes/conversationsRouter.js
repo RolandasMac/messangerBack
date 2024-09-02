@@ -23,6 +23,12 @@ router.post(
   conversationsController.getConvById,
   conversationsController.sendDataById
 );
+router.get(
+  "/getconversationbyid/:convId",
+  authMiddleware,
+  conversationsController.getConvById,
+  conversationsController.sendDataById
+);
 router.post(
   "/addnewparticipant/:convId",
   authMiddleware,

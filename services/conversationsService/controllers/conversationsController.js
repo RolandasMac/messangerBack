@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const {
   sendCoteMessageNotifyClient,
   sendCoteMessageNotifyClientRenevdata,
+  sendCoteMessageNotifyClientRenevdataOneConv,
 } = require("../plugin");
 // const { log } = require("console");
 //*********************************
@@ -435,6 +436,71 @@ exports.sendMessage = async (req) => {
     );
 
     const oneConv = await Conversations.aggregate(
+      // [
+      //   {
+      //     $match: {
+      //       _id: new mongoose.Types.ObjectId(toConv),
+      //     },
+      //   },
+      //   {
+      //     $lookup: {
+      //       from: "users",
+      //       localField: "convParticipants.userId",
+      //       foreignField: "_id",
+      //       as: "convParticipants1",
+      //     },
+      //   },
+      //   {
+      //     $lookup: {
+      //       from: "users",
+      //       localField: "messages.ownerId",
+      //       foreignField: "_id",
+      //       as: "messageOwners",
+      //     },
+      //   },
+      //   {
+      //     $addFields: {
+      //       messages: {
+      //         $map: {
+      //           input: "$messages",
+      //           as: "message",
+      //           in: {
+      //             message: "$$message.message",
+      //             ownerId: "$$message.ownerId",
+      //             createdAt: "$$message.createdAt",
+      //             likes: [],
+      //             owner: {
+      //               $arrayElemAt: [
+      //                 {
+      //                   $filter: {
+      //                     input: "$messageOwners",
+      //                     as: "owner",
+      //                     cond: {
+      //                       $eq: ["$$owner._id", "$$message.ownerId"],
+      //                     },
+      //                   },
+      //                 },
+      //                 0,
+      //               ],
+      //             },
+      //           },
+      //         },
+      //       },
+      //     },
+      //   },
+      //   {
+      //     $project: {
+      //       _id: 1,
+      //       convParticipants1: 1,
+      //       lastMessage: {
+      //         $arrayElemAt: [
+      //           "$messages",
+      //           { $subtract: [{ $size: "$messages" }, 1] },
+      //         ],
+      //       },
+      //     },
+      //   },
+      // ],
       [
         {
           $match: {
@@ -464,10 +530,11 @@ exports.sendMessage = async (req) => {
                 input: "$messages",
                 as: "message",
                 in: {
+                  _id: "$$message._id", // Include the message _id
                   message: "$$message.message",
                   ownerId: "$$message.ownerId",
                   createdAt: "$$message.createdAt",
-                  likes: [],
+                  likes: "$$message.likes", // Assuming likes is part of the message schema
                   owner: {
                     $arrayElemAt: [
                       {
@@ -489,19 +556,34 @@ exports.sendMessage = async (req) => {
         },
         {
           $project: {
-            _id: 1,
-            convParticipants1: 1,
+            _id: 1, // Keep the conversation _id
+            convParticipants1: 1, // Keep the participants info
             lastMessage: {
-              $arrayElemAt: [
-                "$messages",
-                { $subtract: [{ $size: "$messages" }, 1] },
-              ],
+              $let: {
+                vars: {
+                  lastMsg: {
+                    $arrayElemAt: [
+                      "$messages",
+                      { $subtract: [{ $size: "$messages" }, 1] },
+                    ],
+                  },
+                },
+                in: {
+                  _id: "$$lastMsg._id", // Add _id to the lastMessage object
+                  message: "$$lastMsg.message",
+                  ownerId: "$$lastMsg.ownerId",
+                  createdAt: "$$lastMsg.createdAt",
+                  likes: "$$lastMsg.likes",
+                  owner: "$$lastMsg.owner",
+                },
+              },
             },
           },
         },
       ],
       { maxTimeMS: 60000, allowDiskUse: true }
     );
+    console.log(oneConv);
     return oneConv;
   } catch (error) {
     // res.status(400).json({ message: error.message });
@@ -803,7 +885,7 @@ exports.addLike = async (req, res, next) => {
     const { id } = req.tokenInfo;
     const { convId, msgId, userId } = req.body;
 
-    console.log(convId + msgId + userId);
+    // console.log(convId + msgId + userId);
     const conversation = await Conversations.updateOne(
       {
         _id: new mongoose.Types.ObjectId(convId),
@@ -811,7 +893,7 @@ exports.addLike = async (req, res, next) => {
       },
       { $addToSet: { "messages.$.likes": new mongoose.Types.ObjectId(userId) } } // Add userId to the likes array if not already present
     );
-    console.log(conversation);
+    // console.log(conversation);
     if (conversation.modifiedCount > 0) {
       const oneConv = await Conversations.aggregate([
         {
@@ -886,7 +968,13 @@ exports.addLike = async (req, res, next) => {
           },
         },
       ]);
-      console.log(oneConv);
+      // console.log(oneConv);
+      console.log("Cote žinutė iškeliavo");
+
+      sendCoteMessageNotifyClientRenevdataOneConv(oneConv).then((response) => {
+        console.log("Cote Cote informavo apie pristatymą");
+      });
+
       res.status(201).json({ message: "Like pridėtas", oneConv });
     }
   } catch (error) {

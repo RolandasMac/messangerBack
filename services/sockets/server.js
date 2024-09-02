@@ -10,6 +10,7 @@ const {
   sendCoteMessageGetNewChatMessage,
   convService,
   convService1,
+  convService2,
 } = require("./plugin");
 // const { log } = require("console");
 //*********************************
@@ -165,15 +166,22 @@ convService.on("NotifyClient", async (req, cb) => {
   // console.log(req.data);
   // const result = await conversationsController.sendMessage(req);
   // console.log(req.data[0], convParticipants1);
-  const lastMessage = {
-    lastMessage: req.data[0].messages[req.data[0].messages.length - 1],
-    _id: req.data[0]._id,
-  };
+
+  // console.log("_iūrėti čia" + req.data[0]);
+
+  // const lastMessage = {
+  //   lastMessage: req.data[0].messages[req.data[0].messages.length - 1],
+  //   _id: req.data[0]._id,
+  // };
+  // const lastMessage = {
+  //   lastMessage: req.data[0].messages[req.data[0].messages.length - 1],
+  //   _id: req.data[0]._id,
+  // };
 
   req.data[0].convParticipants1.forEach((element) => {
     if (element.socketId.length) {
       // console.log(element.socketId);
-      io.to(element.socketId).emit("newmessage", lastMessage);
+      io.to(element.socketId).emit("newmessage", req.data[0]);
     }
   });
   cb("Ok");
@@ -186,6 +194,19 @@ convService1.on("NotifyClientRenewData", async (req, cb) => {
     if (element.socketId.length) {
       // console.log(element.socketId);
       io.to(element.socketId).emit("renewData", convId);
+    }
+  });
+  cb("Ok");
+});
+convService2.on("NotifyClientRenewOneConvData", async (req, cb) => {
+  console.log("Žinutė gautaaaaa");
+  console.log(req.data);
+  const convId = req.data[0]._id;
+  // console.log(convId);
+  req.data[0].convParticipants1.forEach((element) => {
+    if (element.socketId.length) {
+      // console.log(element.socketId);
+      io.to(element.socketId).emit("renewOneConvData", convId);
     }
   });
   cb("Ok");

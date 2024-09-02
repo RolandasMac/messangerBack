@@ -33,7 +33,20 @@ const client2 = new cote.Requester({
 const sendCoteMessageNotifyClientRenevdata = (data) => {
   return new Promise((resolve) => {
     client2.send({ type: "NotifyClientRenewData", data }, (getData) => {
-      console.log("išsiųsta");
+      // console.log("išsiųsta");
+      resolve(getData);
+    });
+  });
+};
+const client3 = new cote.Requester({
+  name: "Conversation notify like added",
+  key: "ConversAddLike_Service_key",
+});
+
+const sendCoteMessageNotifyClientRenevdataOneConv = (data) => {
+  return new Promise((resolve) => {
+    client3.send({ type: "NotifyClientRenewOneConvData", data }, (getData) => {
+      // console.log("išsiųsta");
       resolve(getData);
     });
   });
@@ -43,4 +56,5 @@ module.exports = {
   sendCoteMessageToGetClientData,
   sendCoteMessageNotifyClient,
   sendCoteMessageNotifyClientRenevdata,
+  sendCoteMessageNotifyClientRenevdataOneConv,
 };

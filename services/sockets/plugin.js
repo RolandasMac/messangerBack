@@ -47,6 +47,10 @@ const convService1 = new cote.Responder({
   name: "Conv Service responder",
   key: "ConversDel_Service_key",
 });
+const convService2 = new cote.Responder({
+  name: "Conv Service responder",
+  key: "ConversAddLike_Service_key",
+});
 
 // convService.on("chatMsg", async (req, cb) => {
 //   // console.log(req.data);
@@ -63,4 +67,5 @@ module.exports = {
   sendCoteMessageGetNewChatMessage,
   convService,
   convService1,
+  convService2,
 };
