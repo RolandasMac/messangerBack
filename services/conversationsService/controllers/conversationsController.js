@@ -799,14 +799,96 @@ exports.deleteConvById = async (req, res, next) => {
   }
 };
 exports.addLike = async (req, res, next) => {
-  const { id } = req.tokenInfo;
-  const { convId, msgId } = req.body;
-
-  console.log(req.body);
   try {
-    res
-      .status(201)
-      .json({ message: "Pokalbis ištrintas", deletedConversation });
+    const { id } = req.tokenInfo;
+    const { convId, msgId, userId } = req.body;
+
+    console.log(convId + msgId + userId);
+    const conversation = await Conversations.updateOne(
+      {
+        _id: new mongoose.Types.ObjectId(convId),
+        "messages._id": new mongoose.Types.ObjectId(msgId),
+      },
+      { $addToSet: { "messages.$.likes": new mongoose.Types.ObjectId(userId) } } // Add userId to the likes array if not already present
+    );
+    console.log(conversation);
+    if (conversation.modifiedCount > 0) {
+      const oneConv = await Conversations.aggregate([
+        {
+          $match: {
+            _id: new mongoose.Types.ObjectId(convId),
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "convParticipants.userId",
+            foreignField: "_id",
+            as: "convParticipants1",
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "messages.ownerId",
+            foreignField: "_id",
+            as: "messageOwners",
+          },
+        },
+        {
+          $addFields: {
+            messages: {
+              $map: {
+                input: "$messages",
+                as: "message",
+                in: {
+                  _id: "$$message._id", // Include the message _id
+                  message: "$$message.message",
+                  ownerId: "$$message.ownerId",
+                  createdAt: "$$message.createdAt",
+                  likes: "$$message.likes", // Include the likes array
+                  owner: {
+                    $arrayElemAt: [
+                      {
+                        $map: {
+                          input: {
+                            $filter: {
+                              input: "$messageOwners",
+                              as: "owner",
+                              cond: {
+                                $eq: ["$$owner._id", "$$message.ownerId"],
+                              },
+                            },
+                          },
+                          as: "owner",
+                          in: {
+                            _id: "$$owner._id", // Include the owner's _id
+                            name: "$$owner.name", // Include any other fields you need from the owner
+                            email: "$$owner.email",
+                            photo: "$$owner.photo",
+                          },
+                        },
+                      },
+                      0,
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        },
+        {
+          $project: {
+            __v: 0,
+            convParticipants: 0,
+            "convParticipants1.password": 0, // Exclude password from convParticipants1
+            messageOwners: 0, // Exclude the intermediate messageOwners array
+          },
+        },
+      ]);
+      console.log(oneConv);
+      res.status(201).json({ message: "Like pridėtas", oneConv });
+    }
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
