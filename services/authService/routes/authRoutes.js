@@ -10,6 +10,9 @@ const { authMiddleware1 } = require("../middleware/authMiddleware1");
 const {
   passwordValidateMiddleware,
 } = require("../middleware/passwordValidateMiddleware");
+const {
+  emailValidateMiddleware,
+} = require("../middleware/emailValidateMiddleware");
 
 router.post("/sendemailcode", authController.sendEmailCode);
 router.post(
@@ -36,7 +39,12 @@ router.post(
   passwordValidateMiddleware,
   authController.changePassword
 );
-router.post("/changeuseremail", authMiddleware1, authController.changeEmail);
+router.post(
+  "/changeuseremail",
+  authMiddleware1,
+  emailValidateMiddleware,
+  authController.changeEmail
+);
 
 router.get("/:id", authMiddleware1, authController.getOneUser);
 

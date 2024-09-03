@@ -1,6 +1,6 @@
 module.exports = {
   passwordValidateMiddleware: (req, res, next) => {
-    console.log(req.body);
+    // console.log(req.body);
     const { password, password1, password2 } = req.body;
     if (
       password.length === 0 ||

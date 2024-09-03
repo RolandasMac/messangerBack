@@ -268,7 +268,7 @@ exports.changeAvatar = async (req, res) => {
     );
 
     sendCoteMessageToinformAvatarChange(updatedUser._id).then((response) => {
-      console.log("Cote Cote informavo apie pristatymą");
+      // console.log("Cote Cote informavo apie pristatymą");
     });
 
     res.status(201).json({
@@ -283,7 +283,7 @@ exports.changeAvatar = async (req, res) => {
 exports.changePassword = async (req, res) => {
   const userInfo = req.tokenInfo;
   const { password, password1, password2 } = req.body;
-  console.log(userInfo + password + password1 + password2);
+  // console.log(userInfo + password + password1 + password2);
 
   // const { code, name, password1 } = req.body;
   // const email = authPlugin.getEmailByCode(code);
@@ -331,7 +331,7 @@ exports.changeEmail = async (req, res) => {
   if (!newEmail) {
     return res.status(400).json({ success: false, error: "Neteisingas kodas" });
   }
-  console.log("Čia dar veikia");
+  // console.log("Čia dar veikia");
   try {
     const user = await User.findOneAndUpdate(
       { email: userInfo.email },
@@ -348,7 +348,7 @@ exports.changeEmail = async (req, res) => {
         .status(401)
         .json({ success: false, message: "Blogas slaptažodis" });
     }
-    console.log("Čia dar veikia");
+    // console.log("Čia dar veikia");
 
     const updatedUser = await User.findOneAndUpdate(
       { email: userInfo.email }, // Filter by email

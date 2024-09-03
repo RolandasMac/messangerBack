@@ -583,7 +583,7 @@ exports.sendMessage = async (req) => {
       ],
       { maxTimeMS: 60000, allowDiskUse: true }
     );
-    console.log(oneConv);
+    // console.log(oneConv);
     return oneConv;
   } catch (error) {
     // res.status(400).json({ message: error.message });
@@ -969,10 +969,10 @@ exports.addLike = async (req, res, next) => {
         },
       ]);
       // console.log(oneConv);
-      console.log("Cote žinutė iškeliavo");
+      // console.log("Cote žinutė iškeliavo");
 
       sendCoteMessageNotifyClientRenevdataOneConv(oneConv).then((response) => {
-        console.log("Cote Cote informavo apie pristatymą");
+        // console.log("Cote Cote informavo apie pristatymą");
       });
 
       res.status(201).json({ message: "Like pridėtas", oneConv });

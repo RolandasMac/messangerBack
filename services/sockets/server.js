@@ -43,7 +43,7 @@ io.on("connection", (socket) => {
 
     // send cote message ********
     sendCoteMessage(newData).then((response) => {
-      console.log("response", response);
+      // console.log("response", response);
       // Broadcast the message to all connected clients
       // io.to(socket.id).emit("message", { time, data: fraze });
     });
@@ -101,7 +101,7 @@ io.on("connection", (socket) => {
     // console.log("user disconected" + socket.id);
     // send cote message ********
     sendCoteMessageDisconectedUser({ socketId: socket.id }).then((response) => {
-      console.log("response", response);
+      // console.log("response", response);
       io.emit(
         "fetchUsers"
         //  {
@@ -130,7 +130,7 @@ io.on("connection", (socket) => {
     console.log("user disconected" + socket.id);
     // send cote message ********
     sendCoteMessageDisconectedUser({ socketId: socket.id }).then((response) => {
-      console.log("response", response);
+      // console.log("response", response);
       io.emit(
         "fetchUsers"
         //  {
@@ -200,7 +200,7 @@ convService1.on("NotifyClientRenewData", async (req, cb) => {
   cb("Ok");
 });
 convService2.on("NotifyClientRenewOneConvData", async (req, cb) => {
-  console.log("Žinutė gautaaaaa");
+  // console.log("Žinutė gautaaaaa");
   // console.log(req.data);
   const convId = req.data[0]._id;
   // console.log(convId);
