@@ -56,13 +56,6 @@ const convService3 = new cote.Responder({
   key: "Auth_Service_key",
 });
 
-// convService.on("chatMsg", async (req, cb) => {
-//   // console.log(req.data);
-//   const result = await conversationsController.sendMessage(req);
-//   // console.log(result[0]);
-//   cb(result[0]);
-// });
-
 // ******************************************
 
 module.exports = {
