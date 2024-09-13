@@ -22,21 +22,21 @@ const PORT = process.env.PROXYPORT || 5000;
 const HOST = process.env.HOST;
 app.use(
   cors({
-    origin: "https://localhost:3000", // Replace with your frontend's origin
+    origin: `https://${HOST}:3000`, // Replace with your frontend's origin
     credentials: true, // This allows cookies and other credentials to be sent
   })
 );
 
 const proxy = (port, url) => {
   return createProxyMiddleware({
-    target: `http://localhost:${port}`,
+    target: `http://${HOST}:${port}`,
     changeOrigin: true,
     pathRewrite: {
       [`^/${url}`]: "/", // Ensure pathRewrite is correctly applied
     },
     proxyTimeout: 5000, // Set a reasonable timeout (adjust as needed)
     onProxyReq: (proxyReq, req, res) => {
-      console.log(`Proxying request to: http://localhost:${port}${req.url}`);
+      console.log(`Proxying request to: http://${HOST}:${port}${req.url}`);
     },
     onProxyRes: (proxyRes, req, res) => {
       console.log(`Received response from target: ${proxyRes.statusCode}`);

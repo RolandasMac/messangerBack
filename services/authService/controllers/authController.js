@@ -246,14 +246,15 @@ exports.logout = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
-exports.test = async (req, res) => {
-  res.cookie("authtoken", "Gaidys", {
-    maxAge: 900000,
-    httpOnly: true, // The cookie is accessible only by the web server
-    secure: false, // Send cookie over HTTPS only
-    sameSite: "Strict", // Cookie will only be sent in a first-party context
-  });
-  res.status(200).json("Ok");
+exports.testas = async (req, res) => {
+  // res.cookie("authtoken", "Gaidys", {
+  //   maxAge: 900000,
+  //   httpOnly: true, // The cookie is accessible only by the web server
+  //   secure: false, // Send cookie over HTTPS only
+  //   sameSite: "Strict", // Cookie will only be sent in a first-party context
+  // });
+  console.log("Gaidys veikia");
+  res.status(200).json({ message: "Gaidys" });
 };
 exports.testgauti = async (req, res) => {
   res.status(200).json(req.tokenInfo);

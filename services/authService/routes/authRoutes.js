@@ -45,6 +45,7 @@ router.post(
   emailValidateMiddleware,
   authController.changeEmail
 );
+router.get("/test", authController.testas);
 
 router.get("/:id", authMiddleware1, authController.getOneUser);
 
