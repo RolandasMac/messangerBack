@@ -1,5 +1,10 @@
 const express = require("express");
+const fs = require("fs");
 const http = require("http");
+const https = require("https");
+const privateKey = fs.readFileSync("../../cert/private.key", "utf8");
+const certificate = fs.readFileSync("../../cert/certificate.crt", "utf8");
+const credentials = { key: privateKey, cert: certificate };
 const { Server } = require("socket.io");
 const path = require("path");
 const dotenv = require("dotenv");
@@ -21,8 +26,9 @@ const {
 
 const app = express();
 const server = http.createServer(app);
+var httpsServer = https.createServer(credentials, app);
 
-const io = new Server(server, {
+const io = new Server(httpsServer, {
   cors: {
     origin: `https://${HOST}`,
     methods: ["GET", "POST"],
