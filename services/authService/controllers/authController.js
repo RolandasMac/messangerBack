@@ -10,7 +10,7 @@ const jwt = require("jsonwebtoken");
 const {
   sendCoteMessageToinformAvatarChange,
 } = require("../plugins/cotePlugin");
-const BACKHOST = process.env.BACKHOST;
+const HOST = process.env.HOST;
 // Generate a 6-digit code
 function generateVerificationCode() {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -107,7 +107,7 @@ exports.login = async (req, res) => {
       // path = where the cookie is valid
       path: "/",
       // domain = what domain the cookie is valid on
-      domain: BACKHOST,
+      domain: HOST,
       // secure = only send cookie over https
       secure: true,
       // sameSite = only send cookie if the request is coming from the same origin
