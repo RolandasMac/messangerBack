@@ -231,6 +231,6 @@ convService3.on("renewUserData", async (req, cb) => {
 // ******************************************
 
 const PORT = process.env.SOCKET_PORT || 5004;
-server.listen(PORT, () => {
+httpsServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
