@@ -107,7 +107,7 @@ exports.login = async (req, res) => {
       // path = where the cookie is valid
       path: "/",
       // domain = what domain the cookie is valid on
-      domain: HOST,
+      domain: `${HOST}`,
       // secure = only send cookie over https
       secure: true,
       // sameSite = only send cookie if the request is coming from the same origin
