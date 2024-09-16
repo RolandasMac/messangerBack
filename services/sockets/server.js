@@ -2,6 +2,8 @@ const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
+const dotenv = require("dotenv");
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 const HOST = process.env.HOST;
 
 //Cote service********
