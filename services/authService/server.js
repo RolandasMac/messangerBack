@@ -28,6 +28,7 @@ const PORT = process.env.AUTHPORT || 5000;
 const PORTSSL = process.env.AUTHPORTSSL;
 const MONGODB_URI =
   process.env.MONGODB_URI || "mongodb://localhost:27017/mydatabase";
+const HOST = process.env.HOST;
 
 // Middleware to parse JSON
 app.use(express.json());
@@ -46,7 +47,7 @@ app.use(express.json());
 // Use cors
 app.use(
   cors({
-    origin: "https://localhost:3000", // Replace with your frontend's origin
+    origin: `https://${HOST}:3000`, // Replace with your frontend's origin
     credentials: true, // This allows cookies and other credentials to be sent
   })
 );

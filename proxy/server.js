@@ -20,6 +20,7 @@ dotenv.config({ path: path.resolve(__dirname, "../.env") });
 // const HOST = "localhost";
 const PORT = process.env.PROXYPORT || 5000;
 const HOST = process.env.HOST;
+const BACKHOST = process.env.BACKHOST;
 app.use(
   cors({
     origin: `https://${HOST}:3000`, // Replace with your frontend's origin
@@ -29,7 +30,7 @@ app.use(
 
 const proxy = (port, url) => {
   return createProxyMiddleware({
-    target: `http://${HOST}:${port}`,
+    target: `http://${BACKHOST}:${port}`,
     changeOrigin: true,
     pathRewrite: {
       [`^/${url}`]: "/", // Ensure pathRewrite is correctly applied

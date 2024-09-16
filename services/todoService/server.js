@@ -13,6 +13,7 @@ const app = express();
 const PORT = process.env.TODOPORT || 5000;
 const MONGODB_URI =
   process.env.MONGODB_URI || "mongodb://localhost:27017/mydatabase";
+const HOST = process.env.HOST;
 
 // Middleware to parse JSON
 app.use(express.json());
@@ -20,7 +21,7 @@ app.use(express.json());
 // Use cors
 app.use(
   cors({
-    origin: "*",
+    origin: `https://${HOST}:3000`,
     methods: "GET,POST,PUT,DELETE,OPTIONS",
     allowedHeaders: "Content-Type, Authorization",
     credentials: true,

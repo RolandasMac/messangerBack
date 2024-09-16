@@ -2,6 +2,7 @@ const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
+const HOST = process.env.HOST;
 
 //Cote service********
 const {
@@ -21,7 +22,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: `https://${HOST}:3000`,
     methods: ["GET", "POST"],
   },
 });
