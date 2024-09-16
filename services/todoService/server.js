@@ -21,7 +21,7 @@ app.use(express.json());
 // Use cors
 app.use(
   cors({
-    origin: `https://${HOST}:3000`,
+    origin: `https://${HOST}`,
     methods: "GET,POST,PUT,DELETE,OPTIONS",
     allowedHeaders: "Content-Type, Authorization",
     credentials: true,

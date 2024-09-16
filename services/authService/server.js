@@ -47,7 +47,7 @@ app.use(express.json());
 // Use cors
 app.use(
   cors({
-    origin: `https://${HOST}:3000`, // Replace with your frontend's origin
+    origin: `https://${HOST}`, // Replace with your frontend's origin
     credentials: true, // This allows cookies and other credentials to be sent
   })
 );

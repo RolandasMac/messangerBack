@@ -34,7 +34,7 @@ app.use(express.json());
 // Use cors
 app.use(
   cors({
-    origin: `https://${HOST}:3000`,
+    origin: `https://${HOST}`,
     credentials: true,
   })
 );
