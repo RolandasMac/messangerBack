@@ -7,7 +7,11 @@ exports.getTodos = async (req, res) => {
     const userId = req.tokenInfo.id;
     // console.log(userId);
     const result = await Todo.findById(userId);
-    res.status(200).json(result.todos);
+    if (result) {
+      res.status(201).json(result.todos);
+    } else {
+      res.status(201).json([]);
+    }
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -27,11 +31,7 @@ exports.createTodo = async (req, res) => {
         upsert: true,
       }
     );
-    if (result) {
-      res.status(201).json(result.todos);
-    } else {
-      res.status(201).json([]);
-    }
+    res.status(201).json(result.todos);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
