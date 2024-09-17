@@ -1,9 +1,9 @@
-const { sendCoteMessageToGetClientData } = require("../plugin");
+const { sendCoteMessageToGetClientData } = require("../../authService/plugin");
 module.exports = {
   authMiddleware1: (req, res, next) => {
     const token = req.cookies.authtoken;
     // const token = req.body.token;
-    // console.log(req);
+    // console.log(req.cookies.authtoken);
     // console.log(token + "123");
     sendCoteMessageToGetClientData(token).then((response) => {
       // console.log("response123", response);
@@ -15,5 +15,6 @@ module.exports = {
       req.tokenInfo = response;
       next();
     });
+    // next();
   },
 };

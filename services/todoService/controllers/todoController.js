@@ -3,7 +3,8 @@ const Todo = require("../models/todoSchema");
 
 exports.getTodos = async (req, res) => {
   try {
-    const userId = "66be44fc19199fe7bb2273eb";
+    // console.log(req.tokenInfo);
+    const userId = req.tokenInfo.id;
     // console.log(userId);
     const result = await Todo.findById(userId);
     res.status(200).json(result.todos);
@@ -15,7 +16,7 @@ exports.getTodos = async (req, res) => {
 exports.createTodo = async (req, res) => {
   try {
     const newTodo = req.body.data;
-    const userId = "66be44fc19199fe7bb2273eb";
+    const userId = req.tokenInfo.id;
     const result = await Todo.findOneAndUpdate(
       { _id: userId },
       {
@@ -34,7 +35,7 @@ exports.createTodo = async (req, res) => {
 
 exports.markAsCompleted = async (req, res) => {
   const { taskId, completed } = req.body;
-  const userId = "66be44fc19199fe7bb2273eb";
+  const userId = req.tokenInfo.id;
 
   try {
     const result = await Todo.findOneAndUpdate(
@@ -51,7 +52,7 @@ exports.markAsCompleted = async (req, res) => {
 };
 
 exports.deleteTodo = async (req, res) => {
-  const userId = "66be44fc19199fe7bb2273eb";
+  const userId = req.tokenInfo.id;
   const { taskId } = req.body;
   try {
     const result = await Todo.findOneAndUpdate(
