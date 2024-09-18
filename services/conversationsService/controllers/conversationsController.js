@@ -884,8 +884,6 @@ exports.addLike = async (req, res, next) => {
   try {
     const { id } = req.tokenInfo;
     const { convId, msgId, userId } = req.body;
-
-    // console.log(convId + msgId + userId);
     const conversation = await Conversations.updateOne(
       {
         _id: new mongoose.Types.ObjectId(convId),
@@ -893,7 +891,6 @@ exports.addLike = async (req, res, next) => {
       },
       { $addToSet: { "messages.$.likes": new mongoose.Types.ObjectId(userId) } } // Add userId to the likes array if not already present
     );
-    // console.log(conversation);
     if (conversation.modifiedCount > 0) {
       const oneConv = await Conversations.aggregate([
         {
@@ -968,12 +965,9 @@ exports.addLike = async (req, res, next) => {
           },
         },
       ]);
-      // console.log(oneConv);
-      // console.log("Cote žinutė iškeliavo");
-
-      sendCoteMessageNotifyClientRenevdataOneConv(oneConv).then((response) => {
-        // console.log("Cote Cote informavo apie pristatymą");
-      });
+      sendCoteMessageNotifyClientRenevdataOneConv(oneConv).then(
+        (response) => {}
+      );
 
       res.status(201).json({ message: "Like pridėtas", oneConv });
     }

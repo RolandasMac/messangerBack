@@ -139,83 +139,35 @@ io.on("connection", (socket) => {
     console.log("user disconected" + socket.id);
     // send cote message ********
     sendCoteMessageDisconectedUser({ socketId: socket.id }).then((response) => {
-      // console.log("response", response);
-      io.emit(
-        "fetchUsers"
-        //  {
-        //   message: `User ${data.username} conected to the server, !`,
-        //   conectedUser: conectedUser,
-        // }
-      );
-      // Broadcast the message to all connected clients
-      // io.to(socket.id).emit("message", { time, data: fraze });
+      io.emit("fetchUsers");
     });
     //******************************* */
-
-    // let disconectedUser = await conectedUsers.find(
-    //   (cur) => cur.socketId === socket.id
-    // );
-    // console.log(`${disconectedUser.username} disconnected`);
-    // conectedUsers = conectedUsers.filter((cur) => cur.socketId !== socket.id);
-    // io.emit("disconecteduser", {
-    //   message: `User ${disconectedUser.username} disconected from the server, !`,
-    //   // user: disconectedUser,
-    // });
   });
 });
 
 // Cote service**************************
 
-// const convService = new cote.Responder({
-//   name: "Conv Service responder",
-//   key: "Conv_Service_key",
-// });
-
 convService.on("NotifyClient", async (req, cb) => {
-  // console.log("Gaiti duomenys");
-  // console.log(req.data);
-  // const result = await conversationsController.sendMessage(req);
-  // console.log(req.data[0], convParticipants1);
-
-  // console.log("_iūrėti čia" + req.data[0]);
-
-  // const lastMessage = {
-  //   lastMessage: req.data[0].messages[req.data[0].messages.length - 1],
-  //   _id: req.data[0]._id,
-  // };
-  // const lastMessage = {
-  //   lastMessage: req.data[0].messages[req.data[0].messages.length - 1],
-  //   _id: req.data[0]._id,
-  // };
-
   req.data[0].convParticipants1.forEach((element) => {
     if (element.socketId.length) {
-      // console.log(element.socketId);
       io.to(element.socketId).emit("newmessage", req.data[0]);
     }
   });
   cb("Ok");
 });
 convService1.on("NotifyClientRenewData", async (req, cb) => {
-  // console.log("Žinutė gautaaaaa" + req.data[0]);
   const convId = req.data[0]._id;
-  // console.log(convId);
   req.data[0].convParticipants1.forEach((element) => {
     if (element.socketId.length) {
-      // console.log(element.socketId);
       io.to(element.socketId).emit("renewData", convId);
     }
   });
   cb("Ok");
 });
 convService2.on("NotifyClientRenewOneConvData", async (req, cb) => {
-  // console.log("Žinutė gautaaaaa");
-  // console.log(req.data);
   const convId = req.data[0]._id;
-  // console.log(convId);
   req.data[0].convParticipants1.forEach((element) => {
     if (element.socketId.length) {
-      // console.log(element.socketId);
       io.to(element.socketId).emit("renewOneConvData", convId);
     }
   });
@@ -223,8 +175,6 @@ convService2.on("NotifyClientRenewOneConvData", async (req, cb) => {
 });
 
 convService3.on("renewUserData", async (req, cb) => {
-  // console.log("Žinutė gauta");
-  // console.log(req.data);
   io.emit("renewOneUserData", req.data);
   cb("Ok");
 });
