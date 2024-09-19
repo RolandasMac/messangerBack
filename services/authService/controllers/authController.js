@@ -137,7 +137,7 @@ exports.login = async (req, res) => {
 };
 exports.autologin = async (req, res) => {
   // res.status(200).json({ success: false, message: "Labas" });
-  const { token } = req.body;
+  const token = req.cookies.authtoken;
   if (!token) {
     res.status(401).json({ success: false, message: "Jūs turite prisijungti" });
   }

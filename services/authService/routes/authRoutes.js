@@ -23,7 +23,7 @@ router.post(
 );
 router.post("/login", authController.login);
 router.get("/getallusers", authMiddleware1, authController.getAllUsers);
-router.post("/autologin", authController.autologin);
+router.get("/autologin", authMiddleware1, authController.autologin);
 router.get("/logout", authMiddleware1, authController.logout);
 router.post(
   "/changeavatar",

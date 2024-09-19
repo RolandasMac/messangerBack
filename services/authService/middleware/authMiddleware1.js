@@ -10,7 +10,7 @@ module.exports = {
       if (!response) {
         return res
           .status(401)
-          .json({ success: false, message: "Autorizavimo klaidda serveryje" });
+          .json({ success: false, message: "Autorizavimo klaida serveryje" });
       }
       req.tokenInfo = response;
       next();
