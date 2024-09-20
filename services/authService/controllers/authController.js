@@ -48,11 +48,12 @@ exports.createUser = async (req, res) => {
   const { code, name, password1 } = req.body;
   const email = authPlugin.getEmailByCode(code);
   if (!email) {
-    return res.status(400).json({ success: false, error: "Neteisingas kodas" });
+    return res
+      .status(200)
+      .json({ success: false, message: "Neteisingas kodas", createdUser: {} });
   }
   try {
     // let image1 = await sendCoteImage(image);
-
     const salt = await bcrypt.genSalt(10);
     const passHash = await bcrypt.hash(password1, salt);
     const password = passHash;
@@ -63,7 +64,7 @@ exports.createUser = async (req, res) => {
       photo: req.imageurl,
     });
     res.status(201).json({
-      message: "new user was created",
+      message: "Naujas vartotojas sukurtas ir išsaugotas duomenų bazėje",
       createdUser: {
         name: newUser.name,
         email: newUser.email,

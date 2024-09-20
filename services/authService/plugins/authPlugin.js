@@ -14,9 +14,13 @@ module.exports = {
   },
   getEmailByCode: (code, type) => {
     let entry = null;
-    if (type === `recovery`) entry = recovery.find((x) => x.code === code);
-    else entry = data.find((x) => x.code === code);
-    return entry ? entry.email : undefined;
+    if (type === `recovery`) {
+      entry = recovery.find((x) => x.code === code);
+    } else {
+      entry = data.find((x) => x.code === code);
+      data = data.filter((x) => x.code !== code);
+    }
+    return entry ? entry.email : false;
   },
   deleteEmail: (email, type) => {
     if (type === `recovery`)
