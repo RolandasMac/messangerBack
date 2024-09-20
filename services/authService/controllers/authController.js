@@ -43,8 +43,6 @@ exports.sendEmailCode = async (req, res) => {
 };
 
 exports.createUser = async (req, res) => {
-  // console.log(req.body);
-
   const { code, name, password1 } = req.body;
   const email = authPlugin.getEmailByCode(code);
   if (!email) {
@@ -53,7 +51,6 @@ exports.createUser = async (req, res) => {
       .json({ success: false, message: "Neteisingas kodas", createdUser: {} });
   }
   try {
-    // let image1 = await sendCoteImage(image);
     const salt = await bcrypt.genSalt(10);
     const passHash = await bcrypt.hash(password1, salt);
     const password = passHash;
