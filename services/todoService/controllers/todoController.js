@@ -4,7 +4,8 @@ const Todo = require("../models/todoSchema");
 exports.getTodos = async (req, res) => {
   try {
     // console.log(req.tokenInfo);
-    const userId = req.tokenInfo.id;
+    // const userId = req.tokenInfo.id;
+    const userId = "66d43ed067293d5823682e99";
     // console.log(userId);
     const result = await Todo.findById(userId);
     if (result) {
