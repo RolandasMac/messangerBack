@@ -318,8 +318,8 @@ exports.notifyClientBySocket = async (req, res) => {
 
 exports.getConversationsList = async (req, res) => {
   const { id } = req.tokenInfo;
-  console.log("id");
-  console.log(id);
+  // console.log("id");
+  // console.log(id);
   // const userId = "66cdb7e7aff7b6e274913c98";
   // return res.status(200).json("Gaidys");
   try {
