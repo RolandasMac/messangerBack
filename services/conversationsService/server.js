@@ -1,11 +1,11 @@
 // server.js
-const fs = require("fs");
+// const fs = require("fs");
 const http = require("http");
-const https = require("https");
-const privateKey = fs.readFileSync("../../cert/private.key", "utf8");
-const certificate = fs.readFileSync("../../cert/certificate.crt", "utf8");
+// const https = require("https");
+// const privateKey = fs.readFileSync("../../cert/private.key", "utf8");
+// const certificate = fs.readFileSync("../../cert/certificate.crt", "utf8");
 
-const credentials = { key: privateKey, cert: certificate };
+// const credentials = { key: privateKey, cert: certificate };
 
 const express = require("express");
 const mongoose = require("mongoose");
@@ -69,7 +69,7 @@ convService.on("chatMsg", async (req, cb) => {
 //   console.log(`Server is running on port ${PORT}`);
 // });
 var httpServer = http.createServer(app);
-var httpsServer = https.createServer(credentials, app);
+// var httpsServer = https.createServer(credentials, app);
 
 httpServer.listen(PORT);
-httpsServer.listen(PORTSSL);
+// httpsServer.listen(PORTSSL);
