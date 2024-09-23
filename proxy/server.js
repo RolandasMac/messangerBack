@@ -54,7 +54,7 @@ app.use("/auth", proxy(5001, "auth"));
 app.use("/todo", proxy(5002, "todo"));
 app.use("/socket", proxy(5004, "socket"));
 app.use("/conversations", proxy(5005, "conversations"));
-// app.use("/update", proxy(1006, "update"));
+app.use("/contacts", proxy(5006, "contacts"));
 
 // app.listen(PORT, HOST, () => {
 //   console.log(`Proxy Started at: ${HOST}:${PORT}`);

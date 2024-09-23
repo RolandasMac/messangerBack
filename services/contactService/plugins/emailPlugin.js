@@ -56,7 +56,7 @@ const emailPlugin = {
 
       await transporter.sendMail(mailOptions);
 
-      return { message: "Verification email sent successfully" };
+      return { message: "Žinutė sėkmingai išsiųsta" };
     } catch (error) {
       console.error("Error sending verification email:", error);
       throw new Error("Failed to send email. Please try again.");

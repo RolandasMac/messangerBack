@@ -364,3 +364,21 @@ exports.changeEmail = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+exports.sendEmailMessage = async (req, res) => {
+  // const { email, subject, name, text } = req.body;
+  const email = "rolandas.macius@gmail.com";
+  const subject = "Pranešimas";
+  const name = "Rolandas";
+  const text = "Gaidys gieda";
+  const code = text;
+  const userEmail = "rolandas.macius@gmail.com";
+
+  const sendEmail = await emailPlugin.sendVerifyEmail(email, subject, code);
+  try {
+    return res
+      .status(200)
+      .json({ message: sendEmail.message, success: true, data: "data" });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};

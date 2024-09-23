@@ -47,6 +47,8 @@ router.post(
 );
 router.get("/test", authController.testas);
 
+router.post("/sendemailmessage", authController.sendEmailMessage);
+
 router.get("/:id", authMiddleware1, authController.getOneUser);
 
 module.exports = router;
