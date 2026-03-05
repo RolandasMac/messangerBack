@@ -29,7 +29,7 @@ const oAuth2Client = new google.auth.OAuth2(
 // Nustatome refresh tokeną, kad galėtume gauti naujus access tokenus
 oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
 
-async function sendMail(emailTo, subject, html) {
+async function sendMail(name, emailTo, subject, html) {
   try {
     console.log("sendMail: ", emailTo, subject, html);
     // 2. Gaukite naują access tokeną naudodami refresh tokeną
@@ -50,7 +50,7 @@ async function sendMail(emailTo, subject, html) {
 
     // 4. Nustatykite el. laiško parinktis
     const mailOptions = {
-      from: EMAIL_USER,
+      from: name,
       to: emailTo,
       subject: subject,
       html: html,

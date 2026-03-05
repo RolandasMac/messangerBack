@@ -1,10 +1,10 @@
 // controllers/contactsController.js
-const emailPlugin = require("../plugins/emailPlugin1");
+const sendMail = require("../plugins/emailPlugin1");
 
 exports.sendEmailMessage = async (req, res) => {
   const { email, subject, name, text } = req.body;
 
-  const sendEmail = await emailPlugin.sendEmail(name, email, subject, text);
+  const sendEmail = await sendMail(name, email, subject, text);
   try {
     return res
       .status(200)
