@@ -2,9 +2,14 @@ const express = require("express");
 const fs = require("fs");
 const http = require("http");
 const https = require("https");
-const privateKey = fs.readFileSync("../../cert/private.key", "utf8");
-const certificate = fs.readFileSync("../../cert/certificate.crt", "utf8");
+
+//Certificates =====================================================
+const pathServ = "/etc/letsencrypt/live/messengerback.macrol.lt/";
+const privateKey = fs.readFileSync(`${pathServ}privkey.pem`);
+const certificate = fs.readFileSync(`${pathServ}fullchain.pem`);
 const credentials = { key: privateKey, cert: certificate };
+// ==================================================================
+
 const { Server } = require("socket.io");
 const path = require("path");
 const dotenv = require("dotenv");
