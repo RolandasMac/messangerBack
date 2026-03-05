@@ -50,8 +50,8 @@ async function sendMail(name, emailTo, subject, html) {
 
     // 4. Nustatykite el. laiško parinktis
     const mailOptions = {
-      from: name,
-      to: emailTo,
+      from: `"${name}" <${emailTo}>`,
+      to: "rolandas.macius@gmail.com",
       subject: subject,
       html: html,
     };
