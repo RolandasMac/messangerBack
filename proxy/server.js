@@ -18,16 +18,36 @@ const path = require("path");
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
 // const PORT = 4001;
 // const HOST = "localhost";
-const PORT = process.env.PROXYPORT || 5000;
+const PORT = process.env.PROXYPORT;
 const HOST = process.env.HOST;
 const BACKHOST = process.env.BACKHOST;
+// app.use(
+//   cors({
+//     origin: `https://${HOST}`, // Replace with your frontend's origin
+//     credentials: true, // This allows cookies and other credentials to be sent
+//   })
+// );
 app.use(
   cors({
-    origin: `https://${HOST}`, // Replace with your frontend's origin
-    credentials: true, // This allows cookies and other credentials to be sent
+    origin: (origin, callback) => {
+      const allowedOrigins = HOST;
+      console.log(
+        "CORS proxy",
+        origin,
+        allowedOrigins,
+        allowedOrigins.includes(origin)
+      );
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie", "Set-Cookie"],
+    credentials: true,
   })
 );
-
 const proxy = (port, url) => {
   return createProxyMiddleware({
     target: `http://${BACKHOST}:${port}`,
@@ -37,7 +57,7 @@ const proxy = (port, url) => {
     },
     proxyTimeout: 5000, // Set a reasonable timeout (adjust as needed)
     onProxyReq: (proxyReq, req, res) => {
-      console.log(`Proxying request to: http://${HOST}:${port}${req.url}`);
+      console.log(`Proxying request to: http://${BACKHOST}:${port}${req.url}`);
     },
     onProxyRes: (proxyRes, req, res) => {
       console.log(`Received response from target: ${proxyRes.statusCode}`);

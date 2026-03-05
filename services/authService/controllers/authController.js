@@ -84,7 +84,9 @@ exports.login = async (req, res) => {
       { new: true }
     );
     if (!user) {
-      res.status(401).json({ success: false, message: "Tokio vartotojo nėra" });
+      return res
+        .status(401)
+        .json({ success: false, message: "Tokio vartotojo nėra" });
     }
     const passwordMatch = await bcrypt.compare(password, user.password);
 
