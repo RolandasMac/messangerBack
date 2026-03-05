@@ -35,7 +35,7 @@ var httpsServer = https.createServer(credentials, app);
 
 const io = new Server(httpsServer, {
   cors: {
-    origin: `https://${HOST}`,
+    origin: HOST,
     methods: ["GET", "POST"],
   },
 });
