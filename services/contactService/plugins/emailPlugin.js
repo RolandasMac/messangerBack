@@ -36,10 +36,10 @@ const emailPlugin = {
         port: 465,
         secure: true,
         auth: {
-          // user: process.env.GMAIL,
-          // pass: process.env.GMAIL_PASS,
-          user: "nenarkotikams@gmail.com",
-          pass: "qrhhedlzasmmyhqt",
+          user: process.env.GMAIL,
+          pass: process.env.GMAIL_PASS,
+          // user: "nenarkotikams@gmail.com",
+          // pass: "qrhhedlzasmmyhqt",
         },
         tls: {
           rejectUnauthorized: false,
