@@ -30,6 +30,29 @@ const oAuth2Client = new google.auth.OAuth2(
 oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
 
 async function sendMail(name, emailTo, subject, html) {
+  const htmlContent = `
+  <!DOCTYPE html>
+  <html lang="lt">
+  <head>
+      <meta charset="UTF-8">
+      <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .sender-info { background: #f4f4f4; padding: 15px; border-left: 4px solid #007bff; }
+          .label { font-weight: bold; color: #555; }
+      </style>
+  </head>
+  <body>
+      <div class="sender-info">
+          <p><span class="label">Vardas:</span> ${name}</p>
+          <p><span class="label">El. paštas:</span> ${emailTo}</p>
+      </div>
+      <div class="message">
+          <h3>Žinutė:</h3>
+          <p>${html}</p>  <!-- čia html yra jūsų perduodamas žinutės turinys -->
+      </div>
+  </body>
+  </html>
+`;
   try {
     console.log("sendMail: ", emailTo, subject, html);
     // 2. Gaukite naują access tokeną naudodami refresh tokeną
@@ -50,10 +73,10 @@ async function sendMail(name, emailTo, subject, html) {
 
     // 4. Nustatykite el. laiško parinktis
     const mailOptions = {
-      from: `"${name}" email <${emailTo}>`,
+      from: emailTo,
       to: "rolandas.macius@gmail.com",
       subject: subject,
-      html: html,
+      html: htmlContent,
     };
 
     // 5. Išsiųskite el. laišką
