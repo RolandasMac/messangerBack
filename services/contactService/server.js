@@ -22,8 +22,23 @@ app.use(express.json());
 // Use cors
 app.use(
   cors({
-    origin: `https://${HOST}`, // Replace with your frontend's origin
-    credentials: true, // This allows cookies and other credentials to be sent
+    origin: (origin, callback) => {
+      const allowedOrigins = HOST;
+      console.log(
+        "CORS Contacts",
+        origin,
+        allowedOrigins,
+        allowedOrigins.includes(origin)
+      );
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie", "Set-Cookie"],
+    credentials: true,
   })
 );
 
