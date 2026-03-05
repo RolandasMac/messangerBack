@@ -35,8 +35,14 @@ var httpsServer = https.createServer(credentials, app);
 
 const io = new Server(httpsServer, {
   cors: {
-    origin: HOST,
-    methods: ["GET", "POST"],
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS not allowed"));
+      }
+    },
+    credentials: true,
   },
 });
 
