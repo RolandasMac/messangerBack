@@ -47,7 +47,7 @@ async function sendMail(name, emailTo, subject, html) {
           <p><span class="label">El. paštas:</span> ${emailTo}</p>
       </div>
       <div class="message">
-          <h3>Žinutė:</h3>
+          <h3>${subject}:</h3>
           <p>${html}</p>  <!-- čia html yra jūsų perduodamas žinutės turinys -->
       </div>
   </body>
